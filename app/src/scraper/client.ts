@@ -1,6 +1,6 @@
 import puppeteer from 'puppeteer';
 
-const olxBaseUrl = "https://www.olx.pl";
+export const olxBaseUrl = "https://www.olx.pl";
 
 export const visitOlxPage = async (url: string) => {
   const browser = await puppeteer.launch();

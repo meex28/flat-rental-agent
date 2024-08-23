@@ -1,4 +1,4 @@
-import {visitOlxPage} from "./client";
+import {olxBaseUrl, visitOlxPage} from "./client";
 import {OlxOffer} from "./model";
 import {parseOlxPrice} from "./utils";
 
@@ -73,6 +73,6 @@ export const fetchSingleFlatRentOffer = async (url: string): Promise<OlxOffer | 
   return {
     ...scrappedOffer,
     price: parseOlxPrice(scrappedOffer.price),
-    href: url
+    url: `${olxBaseUrl}${url}`
   };
 }

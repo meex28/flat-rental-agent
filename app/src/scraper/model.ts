@@ -1,6 +1,6 @@
 export interface OlxOffer {
   title: string,
-  href: string,
+  url: string,
   price: number,
   description: string
 }
