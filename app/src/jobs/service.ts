@@ -1,4 +1,4 @@
-import {fetchSingleFlatRentOffer, searchOlxOffers} from "../scraper/service";
+import {fetchSingleFlatRentOffer, searchOlxOffers} from "../scraper/olx/service";
 import {sendTelegramNotification} from "../notifications/telegram/service";
 
 export const runOfferNotificationJob = async () => {

@@ -1,6 +1,8 @@
-import {olxBaseUrl, visitOlxPage} from "./client";
-import {OlxOffer} from "./model";
+import {RentOffer} from "../common/types";
 import {parseOlxPrice} from "./utils";
+import {marketplacePlatformBaseUrls, visitPage} from "../common/client";
+
+const olxBaseUrl = marketplacePlatformBaseUrls["OLX"];
 
 export const searchOlxOffers = async (
   city: string,
@@ -24,7 +26,7 @@ export const searchOlxOffers = async (
 }
 
 export const fetchNumberOfPagesOnSearchUrl = async (url: string): Promise<number> => {
-  const page = await visitOlxPage(url);
+  const page = await visitPage(url, "OLX");
   const numberOfPages = await page.evaluate(() => {
     const pageElement = document.querySelectorAll('[data-testid="pagination-list-item"]');
     const numberOfPages = pageElement[pageElement.length - 1]?.textContent;
@@ -39,7 +41,7 @@ export const fetchNumberOfPagesOnSearchUrl = async (url: string): Promise<number
 }
 
 export const searchOlxOffersSinglePage = async (url: string, pageNumber: number): Promise<string[]> => {
-  const page = await visitOlxPage(`${url}&page=${pageNumber}`);
+  const page = await visitPage(`${url}&page=${pageNumber}`, "OLX");
   const urls = await page.evaluate(() => {
     const offers = document.querySelectorAll('[data-testid="l-card"]')
     return Array.from(offers).map((offer) => {
@@ -51,8 +53,8 @@ export const searchOlxOffersSinglePage = async (url: string, pageNumber: number)
   return urls.filter((url) => !url.includes('otodom'));
 }
 
-export const fetchSingleFlatRentOffer = async (url: string): Promise<OlxOffer | null> => {
-  const page = await visitOlxPage(url);
+export const fetchSingleFlatRentOffer = async (url: string): Promise<RentOffer | null> => {
+  const page = await visitPage(url, "OLX");
 
   const scrappedOffer = await page.evaluate(() => {
     const title = document.querySelector('[data-testid="ad_title"]')?.textContent;
@@ -72,6 +74,8 @@ export const fetchSingleFlatRentOffer = async (url: string): Promise<OlxOffer | 
 
   return {
     ...scrappedOffer,
+    id: 0,
+    platform: "OLX",
     price: parseOlxPrice(scrappedOffer.price),
     url: `${olxBaseUrl}${url}`
   };
