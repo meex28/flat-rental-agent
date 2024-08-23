@@ -6,6 +6,7 @@ export const botSubscribedUsers: number[] = [];
 export const launchTelegramBot = async () => {
   const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
   telegramBot = new Telegraf(telegramBotToken!!);
+
   telegramBot.start((ctx) => {
     const userId = ctx.from.id;
     if (!botSubscribedUsers.includes(userId)) {
@@ -16,5 +17,5 @@ export const launchTelegramBot = async () => {
     }
   });
 
-  await telegramBot.launch();
+  telegramBot.launch();
 }
