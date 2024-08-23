@@ -2,9 +2,19 @@ import {visitOlxPage} from "./client";
 import {OlxOffer} from "./model";
 import {parseOlxPrice} from "./utils";
 
-export const queryOlxOffers = async (city: string, queryText: string): Promise<string[]> => {
-  const url = `/nieruchomosci/mieszkania/wynajem/${city}/q-${queryText}`
-  const page = await visitOlxPage(url);
+export const queryOlxOffers = async (
+  city: string,
+  searchParams: Record<string, string> = {},
+  queryText?: string
+): Promise<string[]> => {
+  const baseUrl = `/nieruchomosci/mieszkania/wynajem/${city}/`
+  const queryTextPart = queryText ? `q-${queryText}` : '';
+  const searchParamsPart = Object.entries(searchParams)
+    .map(([key, value]) => `search[${key}]=${value}`)
+    .join('&');
+  const fullUrl = `${baseUrl}${queryTextPart}?${searchParamsPart}`
+
+  const page = await visitOlxPage(fullUrl);
 
   const urls = await page.evaluate(() => {
     const offers = document.querySelectorAll('[data-testid="l-card"]')
