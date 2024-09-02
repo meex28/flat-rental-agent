@@ -1,18 +1,15 @@
-import {fetchSingleFlatRentOffer, searchOlxOffers} from "../scraper/olx/service";
 import {sendTelegramNotification} from "../notifications/telegram/service";
+import {searchOffers} from "../scraper/common/service";
 
 export const runOfferNotificationJob = async () => {
   const searchParams = {
     "filter_enum_rooms": "four",
     "order": "created_at:desc"
   }
-  const offersUrls = await searchOlxOffers("krakow", searchParams);
-  const detailedOffers = await Promise.all(
-    offersUrls.slice(0, 5).map(url => fetchSingleFlatRentOffer(url))
-  );
-  detailedOffers.forEach(offer => console.log(offer?.title))
+  const offers = await searchOffers("krakow", searchParams);
+  offers.forEach(offer => console.log(offer?.title + " - " + offer?.platform))
 
-  const messages = detailedOffers.map(offer => `
+  const messages = offers.map(offer => `
     ${offer?.title}
     
     CENA: ${offer?.price}

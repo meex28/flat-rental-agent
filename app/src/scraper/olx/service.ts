@@ -4,7 +4,7 @@ import {marketplacePlatformBaseUrls, visitPage} from "../common/client";
 
 const olxBaseUrl = marketplacePlatformBaseUrls["OLX"];
 
-export const searchOlxOffers = async (
+export const searchOffersOnOlx = async (
   city: string,
   searchParams: Record<string, string> = {},
   queryText?: string
@@ -19,13 +19,13 @@ export const searchOlxOffers = async (
   const numberOfPages = await fetchNumberOfPagesOnSearchUrl(fullUrl);
 
   const urls = await Promise.all(
-    Array.from({ length: numberOfPages }, (_, i) => searchOlxOffersSinglePage(fullUrl, i + 1))
+    Array.from({ length: numberOfPages }, (_, i) => fetchOffersUrlsFromSinglePage(fullUrl, i + 1))
   );
 
   return urls.flat();
 }
 
-export const fetchNumberOfPagesOnSearchUrl = async (url: string): Promise<number> => {
+const fetchNumberOfPagesOnSearchUrl = async (url: string): Promise<number> => {
   const page = await visitPage(url, "OLX");
   const numberOfPages = await page.evaluate(() => {
     const pageElement = document.querySelectorAll('[data-testid="pagination-list-item"]');
@@ -40,7 +40,7 @@ export const fetchNumberOfPagesOnSearchUrl = async (url: string): Promise<number
   return numberOfPages
 }
 
-export const searchOlxOffersSinglePage = async (url: string, pageNumber: number): Promise<string[]> => {
+const fetchOffersUrlsFromSinglePage = async (url: string, pageNumber: number): Promise<string[]> => {
   const page = await visitPage(`${url}&page=${pageNumber}`, "OLX");
   const urls = await page.evaluate(() => {
     const offers = document.querySelectorAll('[data-testid="l-card"]')
@@ -50,10 +50,10 @@ export const searchOlxOffersSinglePage = async (url: string, pageNumber: number)
     }).filter((o) => o != null);
   });
   await page.close();
-  return urls.filter((url) => !url.includes('otodom'));
+  return urls;
 }
 
-export const fetchSingleFlatRentOffer = async (url: string): Promise<RentOffer | null> => {
+export const getSingleOfferFromOlx = async (url: string): Promise<RentOffer | null> => {
   const page = await visitPage(url, "OLX");
 
   const scrappedOffer = await page.evaluate(() => {
