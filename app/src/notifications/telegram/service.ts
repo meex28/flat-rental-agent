@@ -1,7 +1,9 @@
-import {botSubscribedUsers, telegramBot} from "./bot";
+import {telegramBot} from "./bot";
+import {getAllTelegramBotUsers} from "./repository";
 
-export const sendTelegramNotification = (message: string) => {
-  botSubscribedUsers.forEach(userId => {
-    telegramBot.telegram.sendMessage(userId, message);
+export const sendTelegramNotification = async (message: string) => {
+  const subscribedUsers = await getAllTelegramBotUsers();
+  subscribedUsers.forEach(user => {
+    telegramBot.telegram.sendMessage(user.chat_id, message);
   });
 }

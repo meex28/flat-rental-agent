@@ -12,8 +12,6 @@ export const searchOffers = async (
   const olxUrls = offersUrls.filter(url => !url.includes("otodom")).slice(0, 3);
   const otodomUrls = offersUrls.filter(url => url.includes("otodom")).slice(0, 3);
 
-  console.log("fetched urls")
-
   const offers = await Promise.all([
     ...olxUrls.map(getSingleOfferFromOlx),
     ...otodomUrls.map(getSingleOfferFromOtodom)
