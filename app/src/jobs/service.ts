@@ -3,11 +3,12 @@ import {searchOffers} from "../scraper/common/service";
 
 export const runOfferNotificationJob = async () => {
   const searchParams = {
-    "filter_enum_rooms": "four",
-    "order": "created_at:desc"
+    "filter_enum_rooms": "four"
   }
-  const offers = await searchOffers("krakow", searchParams);
-  offers.forEach(offer => console.log(offer?.title + " - " + offer?.platform))
+
+  const now = new Date();
+  const timestamp = now.getTime() - 5 * 3600 * 1000;
+  const offers = await searchOffers(timestamp, "krakow", searchParams);
 
   const messages = offers.map(offer => `
     ${offer?.title}

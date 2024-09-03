@@ -1,28 +1,33 @@
-import {RentOffer} from "../common/types";
-import {parseOlxPrice} from "./utils";
+import {RentOffer, RentOfferSummary} from "../common/types";
+import {parseOlxCreationDate, parseOlxPrice} from "./utils";
 import {marketplacePlatformBaseUrls, visitPage} from "../common/client";
 
 const olxBaseUrl = marketplacePlatformBaseUrls["OLX"];
 
 export const searchOffersOnOlx = async (
+  timestampFrom: number,
   city: string,
   searchParams: Record<string, string> = {},
   queryText?: string
-): Promise<string[]> => {
+): Promise<RentOfferSummary[]> => {
   const baseUrl = `/nieruchomosci/mieszkania/wynajem/${city}/`;
   const queryTextPart = queryText ? `q-${queryText}` : '';
-  const searchParamsPart = Object.entries(searchParams)
+  const orderSearchParams = {
+    "order": "created_at:desc"
+  }
+  const searchParamsPart = Object.entries({...searchParams, ...orderSearchParams})
     .map(([key, value]) => `search[${key}]=${value}`)
     .join('&');
   const fullUrl = `${baseUrl}${queryTextPart}?${searchParamsPart}`;
 
   const numberOfPages = await fetchNumberOfPagesOnSearchUrl(fullUrl);
 
-  const urls = await Promise.all(
+  const offers = await Promise.all(
     Array.from({ length: numberOfPages }, (_, i) => fetchOffersUrlsFromSinglePage(fullUrl, i + 1))
   );
 
-  return urls.flat();
+  return offers.flat()
+    .filter(offer => offer?.createdAt.getTime() > timestampFrom);
 }
 
 const fetchNumberOfPagesOnSearchUrl = async (url: string): Promise<number> => {
@@ -40,17 +45,24 @@ const fetchNumberOfPagesOnSearchUrl = async (url: string): Promise<number> => {
   return numberOfPages
 }
 
-const fetchOffersUrlsFromSinglePage = async (url: string, pageNumber: number): Promise<string[]> => {
+const fetchOffersUrlsFromSinglePage = async (url: string, pageNumber: number): Promise<RentOfferSummary[]> => {
   const page = await visitPage(`${url}&page=${pageNumber}`, "OLX");
-  const urls = await page.evaluate(() => {
+  const rawOffers = await page.evaluate(() => {
     const offers = document.querySelectorAll('[data-testid="l-card"]')
     return Array.from(offers).map((offer) => {
       const cardTitle = offer.querySelector('[data-cy="ad-card-title"]');
-      return cardTitle?.querySelector('a')?.getAttribute('href');
-    }).filter((o) => o != null);
+      const url = cardTitle?.querySelector('a')?.getAttribute('href');
+
+      const locationAndDate = offer.querySelector('[data-testid="location-date"]');
+      const [_, date] = locationAndDate?.textContent?.split(' - ') ?? [undefined, undefined];
+
+      return { url, createdAt: date };
+    });
   });
   await page.close();
-  return urls;
+
+  return rawOffers.filter(offer => !!offer.url && !!offer.createdAt)
+    .map(offer => ({...offer, createdAt: parseOlxCreationDate(offer.createdAt!!)} as RentOfferSummary));
 }
 
 export const getSingleOfferFromOlx = async (url: string): Promise<RentOffer | null> => {

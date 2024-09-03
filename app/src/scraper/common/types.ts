@@ -1,5 +1,10 @@
 export type MarketplacePlatform = "OLX" | "OTODOM";
 
+export interface RentOfferSummary {
+  url: string;
+  createdAt: Date;
+}
+
 export interface RentOffer {
   id: number;
   title: string;
