@@ -11,7 +11,10 @@ let browser: Browser | null = null;
 
 export const visitPage = async (url: string, platform: MarketplacePlatform, gotoOptions: GoToOptions = {}) => {
   if(!browser) {
-    browser = await puppeteer.launch();
+    browser = await puppeteer.launch({
+      // executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium-browser',
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
   }
   const page = await browser.newPage();
 

@@ -1,4 +1,5 @@
 import {prisma} from "../../database";
+import {TelegramBotUser} from "@prisma/client";
 
 export const saveTelegramBotUser = async (chatId: number) => {
   await prisma.telegramBotUser.create({
@@ -16,7 +17,7 @@ export const deleteTelegramBotUser = async (chatId: number) => {
   })
 };
 
-export const getAllTelegramBotUsers = async () => {
+export const getAllTelegramBotUsers = async (): Promise<TelegramBotUser[]> => {
   return prisma.telegramBotUser.findMany();
 };
 
