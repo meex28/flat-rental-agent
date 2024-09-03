@@ -1,4 +1,4 @@
-import puppeteer, {GoToOptions, Page, PuppeteerLaunchOptions} from 'puppeteer';
+import puppeteer, {Browser, GoToOptions, Page, PuppeteerLaunchOptions} from 'puppeteer';
 import {MarketplacePlatform} from "./types";
 
 export const marketplacePlatformBaseUrls: Record<MarketplacePlatform, string> = {
@@ -6,8 +6,13 @@ export const marketplacePlatformBaseUrls: Record<MarketplacePlatform, string> = 
   OTODOM: "https://www.otodom.pl"
 }
 
-export const visitPage = async (url: string, platform: MarketplacePlatform, launchOptions: PuppeteerLaunchOptions = {}, gotoOptions: GoToOptions = {}) => {
-  const browser = await puppeteer.launch(launchOptions);
+// use single browser to increase performance
+let browser: Browser | null = null;
+
+export const visitPage = async (url: string, platform: MarketplacePlatform, gotoOptions: GoToOptions = {}) => {
+  if(!browser) {
+    browser = await puppeteer.launch();
+  }
   const page = await browser.newPage();
 
   const userAgent =
@@ -19,4 +24,11 @@ export const visitPage = async (url: string, platform: MarketplacePlatform, laun
   await page.goto(fullUrl, gotoOptions);
 
   return page;
+}
+
+export const closeCurrentBrowser = async () => {
+  if (browser) {
+    await browser.close();
+    browser = null;
+  }
 }

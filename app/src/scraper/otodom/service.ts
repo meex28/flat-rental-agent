@@ -5,7 +5,7 @@ import {parseOtodomPrice} from "./utils";
 const otodomBaseUrl = marketplacePlatformBaseUrls["OTODOM"];
 
 export const getSingleOfferFromOtodom = async (url: string): Promise<RentOffer | null> => {
-  const page = await visitPage(url, "OTODOM", {headless: true});
+  const page = await visitPage(url, "OTODOM");
   const scrappedOffer = await page.evaluate(() => {
     const title = document.querySelector('[data-cy="adPageAdTitle"]')?.textContent;
     const basePrice = document.querySelector('[data-cy="adPageHeaderPrice"]')?.textContent;
