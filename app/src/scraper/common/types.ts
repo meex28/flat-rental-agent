@@ -13,3 +13,5 @@ export interface RentOffer {
   url: string;
   platform: MarketplacePlatform;
 }
+
+export type OlxSearchParams = Record<string, string[]>

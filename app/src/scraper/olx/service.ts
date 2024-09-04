@@ -1,4 +1,4 @@
-import {RentOffer, RentOfferSummary} from "../common/types";
+import {OlxSearchParams, RentOffer, RentOfferSummary} from "../common/types";
 import {parseOlxCreationDate, parseOlxPrice} from "./utils";
 import {marketplacePlatformBaseUrls, visitPage} from "../common/client";
 import {logger} from "../../utils/logger";
@@ -8,16 +8,17 @@ const olxBaseUrl = marketplacePlatformBaseUrls["OLX"];
 export const searchOffersOnOlx = async (
   timestampFrom: number,
   city: string,
-  searchParams: Record<string, string> = {},
+  searchParams: OlxSearchParams = {},
   queryText?: string
 ): Promise<RentOfferSummary[]> => {
   const baseUrl = `/nieruchomosci/mieszkania/wynajem/${city}/`;
   const queryTextPart = queryText ? `q-${queryText}` : '';
   const orderSearchParams = {
-    "order": "created_at:desc"
+    "order": ["created_at:desc"]
   }
   const searchParamsPart = Object.entries({...searchParams, ...orderSearchParams})
-    .map(([key, value]) => `search[${key}]=${value}`)
+    .map(([key, value]) => value.map(v => `search[${key}]=${v}`))
+    .flat()
     .join('&');
   const fullUrl = `${baseUrl}${queryTextPart}?${searchParamsPart}`;
 

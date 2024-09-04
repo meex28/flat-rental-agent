@@ -1,12 +1,12 @@
 import {getSingleOfferFromOlx, searchOffersOnOlx} from "../olx/service";
-import {RentOffer} from "./types";
+import {OlxSearchParams, RentOffer} from "./types";
 import {getSingleOfferFromOtodom} from "../otodom/service";
 import {logger} from "../../utils/logger";
 
 export const searchOffers = async (
   timestampFrom: number,
   city: string,
-  searchParams: Record<string, string> = {},
+  searchParams: OlxSearchParams = {},
   queryText?: string
 ): Promise<RentOffer[]> => {
   logger.info(`Start searching offer in ${city} with search params: ${JSON.stringify(searchParams)}`);

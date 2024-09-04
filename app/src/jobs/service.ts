@@ -4,6 +4,7 @@ import cron from 'node-cron';
 import {closeCurrentBrowser} from "../scraper/common/client";
 import {logger} from "../utils/logger";
 import {getCurrentTimeInPoland} from "../utils/time";
+import {OlxSearchParams} from "../scraper/common/types";
 
 export const initializeJobs = async () => {
   const jobIntervalMinutes = 10;
@@ -15,8 +16,8 @@ export const initializeJobs = async () => {
 }
 
 export const runOfferNotificationJob = async (jobIntervalMinutes: number) => {
-  const searchParams = {
-    "filter_enum_rooms": "four"
+  const searchParams: OlxSearchParams = {
+    "filter_enum_rooms": ["three", "four"],
   }
 
   const polandNowTime = getCurrentTimeInPoland();
