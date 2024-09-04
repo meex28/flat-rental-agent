@@ -1,6 +1,7 @@
 import {RentOffer, RentOfferSummary} from "../common/types";
 import {parseOlxCreationDate, parseOlxPrice} from "./utils";
 import {marketplacePlatformBaseUrls, visitPage} from "../common/client";
+import {logger} from "../../utils/logger";
 
 const olxBaseUrl = marketplacePlatformBaseUrls["OLX"];
 
@@ -32,17 +33,16 @@ export const searchOffersOnOlx = async (
 
 const fetchNumberOfPagesOnSearchUrl = async (url: string): Promise<number> => {
   const page = await visitPage(url, "OLX");
-  const numberOfPages = await page.evaluate(() => {
+  const rawNumberOfPages = await page.evaluate(() => {
     const pageElement = document.querySelectorAll('[data-testid="pagination-list-item"]');
-    const numberOfPages = pageElement[pageElement.length - 1]?.textContent;
-    if (!numberOfPages) {
-      console.warn('could not find number of pages');
-      return 1;
-    }
-    return parseInt(numberOfPages);
+    return pageElement[pageElement.length - 1]?.textContent;
   });
   await page.close();
-  return numberOfPages
+  if (!rawNumberOfPages) {
+    logger.warn('Cannot find number of pages on URL: ' + url);
+    return 1;
+  }
+  return Number.parseInt(rawNumberOfPages);
 }
 
 const fetchOffersUrlsFromSinglePage = async (url: string, pageNumber: number): Promise<RentOfferSummary[]> => {
