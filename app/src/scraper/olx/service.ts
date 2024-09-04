@@ -79,11 +79,14 @@ export const getSingleOfferFromOlx = async (url: string): Promise<RentOffer | nu
     const title = document.querySelector('[data-testid="ad_title"]')?.textContent;
     const price = document.querySelector('[data-testid="ad-price-container"]')?.textContent;
     const description = document.querySelector('[data-testid="ad_description"]')?.textContent;
-    if (!title || !price || !description) {
-      console.warn('could not find title, href or price');
+    const footer = document.querySelector('[data-cy="ad-footer-bar-section"]');
+    const id = footer ? footer.children[0].textContent?.replace("ID: ", "") : undefined;
+
+    if (!title || !price || !description || !id) {
       return null;
     }
-    return {title, price, description};
+
+    return {id, title, price, description};
   });
   await page.close();
 
@@ -93,7 +96,7 @@ export const getSingleOfferFromOlx = async (url: string): Promise<RentOffer | nu
 
   return {
     ...scrappedOffer,
-    id: 0,
+    id: Number(scrappedOffer.id),
     platform: "OLX",
     price: parseOlxPrice(scrappedOffer.price),
     url: `${olxBaseUrl}${url}`
