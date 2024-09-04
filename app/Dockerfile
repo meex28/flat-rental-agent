@@ -11,26 +11,9 @@ RUN npx prisma generate
 
 RUN npm run build
 
-FROM node:18-alpine AS production
+FROM ghcr.io/puppeteer/puppeteer:23.1.1 AS production
 
 WORKDIR /app
-
-# install chroumium and other needed dependencies
-RUN apk add --no-cache \
-    udev \
-    ttf-freefont \
-    chromium \
-    nss \
-    freetype \
-    freetype-dev \
-    harfbuzz \
-    ca-certificates \
-    fontconfig \
-    curl
-
-# required to force puppeteer to use installed chromium
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/prisma ./prisma
