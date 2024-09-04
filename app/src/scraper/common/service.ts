@@ -1,6 +1,7 @@
 import {getSingleOfferFromOlx, searchOffersOnOlx} from "../olx/service";
 import {RentOffer} from "./types";
 import {getSingleOfferFromOtodom} from "../otodom/service";
+import {logger} from "../../utils/logger";
 
 export const searchOffers = async (
   timestampFrom: number,
@@ -8,9 +9,13 @@ export const searchOffers = async (
   searchParams: Record<string, string> = {},
   queryText?: string
 ): Promise<RentOffer[]> => {
+  logger.info(`Start searching offer in ${city} with search params: ${JSON.stringify(searchParams)}`);
+
   const offers = await searchOffersOnOlx(timestampFrom, city, searchParams, queryText);
   const olxUrls = offers.filter(offer => !offer.url.includes("otodom")).map(offer => offer.url);
   const otodomUrls = offers.filter(offer => offer.url.includes("otodom")).map(offer => offer.url);
+
+  logger.info(`Found ${olxUrls.length} OLX offers and ${otodomUrls.length} OTODOM offers. Total: ${olxUrls.length + otodomUrls.length}`);
 
   const detailedOffers = await Promise.all([
     ...olxUrls.map(getSingleOfferFromOlx),
