@@ -24,12 +24,18 @@ export const searchOffersOnOlx = async (
 
   const numberOfPages = await fetchNumberOfPagesOnSearchUrl(fullUrl);
 
-  const offers = await Promise.all(
-    Array.from({ length: numberOfPages }, (_, i) => fetchOffersUrlsFromSinglePage(fullUrl, i + 1))
-  );
+  const offersPages: RentOfferSummary[][] = [];
+  for(let i = 0; i < numberOfPages; i++) {
+    const currentPageOffers = await fetchOffersUrlsFromSinglePage(fullUrl, i + 1);
+    // if there are no offers in given time window on current page we stop loading
+    // because we order them by creation date
+    if (currentPageOffers.length === 0) {
+      break;
+    }
+    offersPages.push(currentPageOffers);
+  }
 
-  return offers.flat()
-    .filter(offer => offer?.createdAt.getTime() > timestampFrom);
+  return offersPages.flat().filter(offer => offer?.createdAt.getTime() > timestampFrom);
 }
 
 const fetchNumberOfPagesOnSearchUrl = async (url: string): Promise<number> => {
