@@ -17,9 +17,12 @@ export const runOfferNotificationJob = async (jobIntervalMinutes: number) => {
     "filter_enum_rooms": "four"
   }
 
-  const now = new Date();
-  const lastCheckTimestamp = now.getTime() - jobIntervalMinutes * 60 * 1000;
-  console.log("Run job at " + now);
+  const polandNowTime = new Date(
+    new Date().toLocaleString('en-US', { timeZone: 'Europe/Warsaw' })
+  );
+  const lastCheckTimestamp = polandNowTime.getTime() - jobIntervalMinutes * 60 * 1000;
+
+  console.log("Run job at " + polandNowTime);
 
   const offers = await searchOffers(lastCheckTimestamp, "krakow", searchParams);
 
