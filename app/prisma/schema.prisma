@@ -5,12 +5,33 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   // debian is required in Docker image
   binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 model User {
-  id      Int    @id @default(autoincrement())
-  telegram_chat_id Int
+  id                Int                 @id @default(autoincrement())
+  telegram_chat_id  Int
+  offerRequirements OfferRequirements[]
+}
+
+model OfferRequirements {
+  id            Int           @id @default(autoincrement())
+  propertyType  PropertyType
+  ownershipType OwnershipType
+  localization  String
+  user          User          @relation(fields: [userId], references: [id])
+  userId        Int
+}
+
+enum PropertyType {
+  HOUSE
+  FLAT
+  LAND
+}
+
+enum OwnershipType {
+  RENT
+  SALE
 }
