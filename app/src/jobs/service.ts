@@ -7,7 +7,7 @@ import {getCurrentTimeInPoland} from "../utils/time";
 import {OlxSearchParams} from "../scraper/common/types";
 
 export const initializeJobs = async () => {
-  const jobIntervalMinutes = 10;
+  const jobIntervalMinutes = Number(process.env.JOB_INTERVAL_MINUTES);
   cron.schedule(`*/${jobIntervalMinutes} * * * *`, async () => {
     await runOfferNotificationJob(jobIntervalMinutes);
   });
