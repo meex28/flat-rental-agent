@@ -1,12 +1,7 @@
 import {Telegraf} from "telegraf";
-import {saveUser, userExistsByTelegramChatId} from "../../database/user.repository";
+import {saveUser, userExistsByTelegramChatId} from "../database/user.repository";
 
-export let telegramBot: Telegraf;
-
-export const launchTelegramBot = async () => {
-  const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
-  telegramBot = new Telegraf(telegramBotToken!!);
-
+export const initializeTelegramCommands = (telegramBot: Telegraf) => {
   telegramBot.start(async (ctx) => {
     const chatId = ctx.from.id;
     const userAlreadySubscribed = await userExistsByTelegramChatId(chatId);
@@ -18,6 +13,4 @@ export const launchTelegramBot = async () => {
       await ctx.reply('You have been added to the notification list!')
     }
   });
-
-  telegramBot.launch();
 }

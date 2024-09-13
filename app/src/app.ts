@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import {launchTelegramBot} from "./notifications/telegram/bot";
+import {launchTelegramBot} from "./telegram/init";
 import {initializeJobs} from "./jobs/service";
 
 dotenv.config();

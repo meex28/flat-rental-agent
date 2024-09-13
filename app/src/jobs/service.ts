@@ -1,4 +1,4 @@
-import {sendTelegramNotification} from "../notifications/telegram/service";
+import {sendTelegramNotification} from "../telegram/notifications";
 import {searchOffers} from "../scraper/common/service";
 import cron from 'node-cron';
 import {closeCurrentBrowser} from "../scraper/common/client";
