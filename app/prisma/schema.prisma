@@ -6,9 +6,11 @@ datasource db {
 
 generator client {
   provider = "prisma-client-js"
+  // debian is required in Docker image
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
-model TelegramBotUser {
+model User {
   id      Int    @id @default(autoincrement())
-  chat_id Int
+  telegram_chat_id Int
 }
