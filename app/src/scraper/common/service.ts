@@ -1,5 +1,5 @@
 import {getSingleOfferFromOlx, searchOffersOnOlx} from "../olx/service";
-import {OlxSearchParams, RentOffer, RentOfferSummary} from "./types";
+import {OlxSearchParams, Offer, OfferSummary} from "./types";
 import {getSingleOfferFromOtodom} from "../otodom/service";
 import {logger} from "../../utils/logger";
 
@@ -8,7 +8,7 @@ export const searchOffers = async (
   city: string,
   searchParams: OlxSearchParams = {},
   queryText?: string
-): Promise<RentOffer[]> => {
+): Promise<Offer[]> => {
   logger.info(`Start searching offer in ${city} with search params: ${JSON.stringify(searchParams)}`);
 
   const offers = await searchOffersOnOlx(timestampFrom, city, searchParams, queryText);
@@ -24,7 +24,7 @@ export const searchOffers = async (
   return detailedOffers.filter(offer => offer != null);
 }
 
-const categorizeUrlsByPlatform = (offers: RentOfferSummary[]) => {
+const categorizeUrlsByPlatform = (offers: OfferSummary[]) => {
   const olxUrlsSet = new Set<string>();
   const otodomUrlsSet = new Set<string>();
 

@@ -1,4 +1,4 @@
-import {OlxSearchParams, RentOffer, RentOfferSummary} from "../common/types";
+import {OlxSearchParams, Offer, OfferSummary} from "../common/types";
 import {parseOlxCreationDate, parseOlxPrice} from "./utils";
 import {marketplacePlatformBaseUrls, visitPage} from "../common/client";
 import {logger} from "../../utils/logger";
@@ -10,7 +10,7 @@ export const searchOffersOnOlx = async (
   city: string,
   searchParams: OlxSearchParams = {},
   queryText?: string
-): Promise<RentOfferSummary[]> => {
+): Promise<OfferSummary[]> => {
   const baseUrl = `/nieruchomosci/mieszkania/wynajem/${city}/`;
   const queryTextPart = queryText ? `q-${queryText}` : '';
   const orderSearchParams = {
@@ -24,7 +24,7 @@ export const searchOffersOnOlx = async (
 
   const numberOfPages = await fetchNumberOfPagesOnSearchUrl(fullUrl);
 
-  const offersPages: RentOfferSummary[][] = [];
+  const offersPages: OfferSummary[][] = [];
   for(let i = 0; i < numberOfPages; i++) {
     const currentPageOffers = await fetchOffersUrlsFromSinglePage(fullUrl, i + 1);
     // if there are no offers in given time window on current page we stop loading
@@ -52,7 +52,7 @@ const fetchNumberOfPagesOnSearchUrl = async (url: string): Promise<number> => {
   return Number.parseInt(rawNumberOfPages);
 }
 
-const fetchOffersUrlsFromSinglePage = async (url: string, pageNumber: number): Promise<RentOfferSummary[]> => {
+const fetchOffersUrlsFromSinglePage = async (url: string, pageNumber: number): Promise<OfferSummary[]> => {
   const page = await visitPage(`${url}&page=${pageNumber}`, "OLX");
   const rawOffers = await page.evaluate(() => {
     const offers = document.querySelectorAll('[data-testid="l-card"]')
@@ -69,10 +69,10 @@ const fetchOffersUrlsFromSinglePage = async (url: string, pageNumber: number): P
   await page.close();
 
   return rawOffers.filter(offer => !!offer.url && !!offer.createdAt)
-    .map(offer => ({...offer, createdAt: parseOlxCreationDate(offer.createdAt!!)} as RentOfferSummary));
+    .map(offer => ({...offer, createdAt: parseOlxCreationDate(offer.createdAt!!)} as OfferSummary));
 }
 
-export const getSingleOfferFromOlx = async (url: string): Promise<RentOffer | null> => {
+export const getSingleOfferFromOlx = async (url: string): Promise<Offer | null> => {
   const page = await visitPage(url, "OLX");
 
   const scrappedOffer = await page.evaluate(() => {

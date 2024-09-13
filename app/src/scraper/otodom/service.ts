@@ -1,10 +1,10 @@
-import {RentOffer} from "../common/types";
+import {Offer} from "../common/types";
 import {marketplacePlatformBaseUrls, visitPage} from "../common/client";
 import {parseOtodomPrice} from "./utils";
 
 const otodomBaseUrl = marketplacePlatformBaseUrls["OTODOM"];
 
-export const getSingleOfferFromOtodom = async (url: string): Promise<RentOffer | null> => {
+export const getSingleOfferFromOtodom = async (url: string): Promise<Offer | null> => {
   const page = await visitPage(url, "OTODOM");
   const scrappedOffer = await page.evaluate(() => {
     const title = document.querySelector('[data-cy="adPageAdTitle"]')?.textContent;
@@ -25,5 +25,5 @@ export const getSingleOfferFromOtodom = async (url: string): Promise<RentOffer |
     platform: "OTODOM",
     price: parseOtodomPrice(scrappedOffer.basePrice),
     id: 0 // TODO: include ID
-  } as RentOffer
+  } as Offer
 }
