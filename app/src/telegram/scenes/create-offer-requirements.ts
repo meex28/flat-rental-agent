@@ -5,14 +5,18 @@ import {AvailableScenes} from "../types";
 import {saveUserOfferRequirements} from "../../service/offer-requirements.service";
 
 const propertyTypes = Object.values(PropertyType);
-const propertyTypesString = propertyTypes.join(', ');
 const ownershipTypes = Object.values(OwnershipType);
-const ownershipTypesString = ownershipTypes.join(' or ');
 
+const invalidInputUsingButtonsMessage = "Please use the provided buttons to make your selection. If you don't see the buttons, you may need to update your Telegram app.";
+
+// TODO: add leaving scene
 // TODO: replace `any` with correct type
 export const createOfferRequirements = new WizardScene<any>(
   AvailableScenes.CREATE_OFFER_REQUIREMENTS,
   (ctx) => {
+    ctx.reply(
+      "Hi! I'll help you set up your preferences for offers you will be notified about. Let's get started!"
+    )
     ctx.reply(
       `What type of property are you interested in?`,
       Markup.inlineKeyboard(
@@ -24,17 +28,13 @@ export const createOfferRequirements = new WizardScene<any>(
     return ctx.wizard.next();
   },
   (ctx) => {
-    if (!ctx.callbackQuery || !ctx.callbackQuery.data) {
-      ctx.reply(`Please select a property type using the buttons provided.`);
-      return;
-    }
-    const propertyType = ctx.callbackQuery.data.toUpperCase();
+    const propertyType = ctx.callbackQuery?.data?.toUpperCase();
     if (!propertyTypes.includes(propertyType)) {
-      ctx.reply(`Invalid input. Please choose one of the following: ${propertyTypesString}`);
+      ctx.reply(invalidInputUsingButtonsMessage);
       return;
     }
     ctx.wizard.state.offerRequirements = {propertyType};
-    ctx.reply(`Which ownership type are you interested in?`,
+    ctx.reply(`Great choice! Are you looking to buy or rent?`,
       Markup.inlineKeyboard(
         ownershipTypes.map((type) =>
           Markup.button.callback(type, type)
@@ -44,37 +44,38 @@ export const createOfferRequirements = new WizardScene<any>(
     return ctx.wizard.next();
   },
   (ctx) => {
-    if (!ctx.callbackQuery || !ctx.callbackQuery.data) {
-      ctx.reply(`Please select an ownership type using the buttons provided.`);
-      return;
-    }
-    const ownershipType = ctx.callbackQuery.data.toUpperCase();
+    const ownershipType = ctx.callbackQuery?.data?.toUpperCase();
     if (!ownershipTypes.includes(ownershipType)) {
-      ctx.reply(`Invalid input. Please choose either ${ownershipTypesString}.`);
+      ctx.reply(invalidInputUsingButtonsMessage);
       return;
     }
     ctx.wizard.state.offerRequirements.ownershipType = ownershipType;
-    ctx.reply('Where is the property located? (Please provide the city without polish chars, like "Krakow")');
+    ctx.reply('Understood. Now, where are you looking for this property? Please provide the city name without Polish characters, e.g., "Krakow".');
     return ctx.wizard.next();
   },
   async (ctx) => {
     if (!ctx.message || !ctx.message.text) {
-      ctx.reply('Please provide a text message with the location.');
+      ctx.reply("I'm sorry, I couldn't recognize that city name. Please try again with a valid Polish city name, without using Polish characters.");
       return;
     }
     const localization = ctx.message.text;
     ctx.wizard.state.offerRequirements.localization = localization;
 
     const {propertyType, ownershipType} = ctx.wizard.state.offerRequirements;
-    ctx.reply(`Summary of your requirements:
-    - Property Type: ${propertyType}
-    - Ownership Type: ${ownershipType}
-    - Localization: ${localization}`);
+    ctx.reply(`Thank you for providing all the details. Here's a summary of your requirements:
+    - Property type: ${propertyType}
+    - Purpose: ${ownershipType}
+    - Location: ${localization}`
+    );
 
     const chatId = ctx.from.id;
     await saveUserOfferRequirements(chatId, {propertyType, ownershipType, localization});
 
-    ctx.reply('Thank you! Your offer requirements have been recorded.');
+    ctx.reply(
+      "I've saved these preferences and will start sending you notifications when matching offers are found. " +
+      "You can update these preferences anytime by typing /set_requirements."
+    );
+
     return ctx.scene.leave();
   }
 );
