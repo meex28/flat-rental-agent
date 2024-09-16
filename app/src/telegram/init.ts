@@ -11,7 +11,7 @@ export const launchTelegramBot = async () => {
   telegramBot.use(session());
 
   initializeTelegramScenes(telegramBot);
-  initializeTelegramCommands(telegramBot);
+  await initializeTelegramCommands(telegramBot);
 
   telegramBot.launch();
 

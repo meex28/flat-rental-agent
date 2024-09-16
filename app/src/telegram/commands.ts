@@ -1,8 +1,17 @@
 import {Telegraf} from "telegraf";
 import {saveUser, userExistsByTelegramChatId} from "../database/user.repository";
-import {AvailableScenes, CustomTelegrafContext} from "./types";
+import {AvailableCommands, AvailableScenes, CustomTelegrafContext} from "./types";
 
-export const initializeTelegramCommands = (telegramBot: Telegraf<CustomTelegrafContext>) => {
+const commandsDescriptions: Record<AvailableCommands, string> = {
+  start: "Start receiving notifications",
+  set_requirements: "Set requirements of offers that you want to receive notifications",
+}
+
+export const initializeTelegramCommands = async (telegramBot: Telegraf<CustomTelegrafContext>) => {
+  await telegramBot.telegram.setMyCommands(
+    Object.entries(commandsDescriptions).map(([command, description]) => ({command, description}))
+  );
+
   telegramBot.start(async (ctx) => {
     const chatId = ctx.from.id;
     const userAlreadySubscribed = await userExistsByTelegramChatId(chatId);
@@ -15,7 +24,7 @@ export const initializeTelegramCommands = (telegramBot: Telegraf<CustomTelegrafC
     }
   });
 
-  telegramBot.command("set_requirements", (ctx) => {
+  telegramBot.command(AvailableCommands.SET_REQUIREMENTS, (ctx) => {
     ctx.scene.enter(AvailableScenes.CREATE_OFFER_REQUIREMENTS);
   })
 }
