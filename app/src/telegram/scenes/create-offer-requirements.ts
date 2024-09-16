@@ -2,6 +2,7 @@ import {WizardScene} from "telegraf/scenes";
 import {OwnershipType, PropertyType} from "@prisma/client";
 import {Markup} from "telegraf";
 import {AvailableScenes} from "../types";
+import {saveUserOfferRequirements} from "../../service/offer-requirements.service";
 
 const propertyTypes = Object.values(PropertyType);
 const propertyTypesString = propertyTypes.join(', ');
@@ -32,7 +33,7 @@ export const createOfferRequirements = new WizardScene<any>(
       ctx.reply(`Invalid input. Please choose one of the following: ${propertyTypesString}`);
       return;
     }
-    ctx.wizard.state.offer = {propertyType};
+    ctx.wizard.state.offerRequirements = {propertyType};
     ctx.reply(`Which ownership type are you interested in?`,
       Markup.inlineKeyboard(
         ownershipTypes.map((type) =>
@@ -52,28 +53,26 @@ export const createOfferRequirements = new WizardScene<any>(
       ctx.reply(`Invalid input. Please choose either ${ownershipTypesString}.`);
       return;
     }
-    ctx.wizard.state.offer.ownershipType = ownershipType;
+    ctx.wizard.state.offerRequirements.ownershipType = ownershipType;
     ctx.reply('Where is the property located? (Please provide the city without polish chars, like "Krakow")');
     return ctx.wizard.next();
   },
-  (ctx) => {
+  async (ctx) => {
     if (!ctx.message || !ctx.message.text) {
       ctx.reply('Please provide a text message with the location.');
       return;
     }
     const localization = ctx.message.text;
-    ctx.wizard.state.offer.localization = localization;
+    ctx.wizard.state.offerRequirements.localization = localization;
 
-    const {propertyType, ownershipType} = ctx.wizard.state.offer;
+    const {propertyType, ownershipType} = ctx.wizard.state.offerRequirements;
     ctx.reply(`Summary of your requirements:
     - Property Type: ${propertyType}
     - Ownership Type: ${ownershipType}
     - Localization: ${localization}`);
 
-    const chat_id = ctx.from.id;
-    ctx.wizard.state.offer.chat_id = chat_id;
-
-    // TODO: save in db
+    const chatId = ctx.from.id;
+    await saveUserOfferRequirements(chatId, {propertyType, ownershipType, localization});
 
     ctx.reply('Thank you! Your offer requirements have been recorded.');
     return ctx.scene.leave();

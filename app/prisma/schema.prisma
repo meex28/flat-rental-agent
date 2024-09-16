@@ -23,6 +23,8 @@ model OfferRequirements {
   localization  String
   user          User          @relation(fields: [userId], references: [id])
   userId        Int
+
+  @@unique([userId])
 }
 
 enum PropertyType {

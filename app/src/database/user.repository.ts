@@ -19,6 +19,14 @@ export const getAllUsers = async (): Promise<User[]> => {
   return prisma.user.findMany();
 };
 
+export const findUserByTelegramChatId = async (telegramChatId: number): Promise<User | null> => {
+  return prisma.user.findFirst({
+    where: {
+      telegram_chat_id: telegramChatId
+    }
+  });
+}
+
 export const userExistsByTelegramChatId = async (telegramChatId: number) => {
   return (await prisma.user.count({
     where: {
