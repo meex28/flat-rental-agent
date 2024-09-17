@@ -4,6 +4,9 @@ import {marketplacePlatformBaseUrls, visitPage} from "../common/client";
 import {logger} from "../../utils/logger";
 import {OfferRequirements} from "@prisma/client";
 import {ownershipTypeUrlMappings, propertyTypeUrlMappings} from "./mappings";
+import {fetchLocationAutocomplete} from "./api";
+import {InternalServerError, ObjectNotFoundError} from "../../common/errors";
+import {OlxLocation} from "./types";
 
 const olxBaseUrl = marketplacePlatformBaseUrls["OLX"];
 
@@ -16,7 +19,7 @@ export const searchOffersOnOlx = async (
   const numberOfPages = await fetchNumberOfPagesOnSearchUrl(url);
 
   const offersPages: OfferSummary[][] = [];
-  for(let i = 0; i < numberOfPages; i++) {
+  for (let i = 0; i < numberOfPages; i++) {
     const currentPageOffers = await fetchOffersUrlsFromSinglePage(url, i + 1);
     // if there are no offers in given time window on current page we stop loading
     // because we order them by creation date
@@ -33,7 +36,7 @@ const buildSearchUrl = (requirements: OfferRequirements) => {
   const baseUrl = `/nieruchomosci` +
     `/${propertyTypeUrlMappings[requirements.propertyType]}` +
     `/${ownershipTypeUrlMappings[requirements.ownershipType]}` +
-    `/${requirements.location}/`;
+    `/${requirements.location_normalized_name}/`;
 
   const orderSearchParams = {
     "order": ["created_at:desc"]
@@ -72,7 +75,7 @@ const fetchOffersUrlsFromSinglePage = async (url: string, pageNumber: number): P
       const locationAndDate = offer.querySelector('[data-testid="location-date"]');
       const [_, date] = locationAndDate?.textContent?.split(' - ') ?? [undefined, undefined];
 
-      return { url, createdAt: date };
+      return {url, createdAt: date};
     });
   });
   await page.close();
@@ -110,4 +113,25 @@ export const getSingleOfferFromOlx = async (url: string): Promise<Offer | null> 
     price: parseOlxPrice(scrappedOffer.price),
     url: `${olxBaseUrl}${url}`
   };
+}
+
+/**
+ * Fetches the OLX location based on the provided query. Powered by OLX location autocomplete from main page.
+ *
+ * @param {string} query - The query string to search for the location.
+ * @returns {Promise<OlxLocation>} - The first location data from the response.
+ * @throws {InternalServerError} If there is an error fetching location autocomplete from OLX.
+ * @throws {ObjectNotFoundError} If no locations are found for the given query.
+ */
+export const getOlxLocation = async (query: string): Promise<OlxLocation> => {
+  let response;
+  try {
+    response = await fetchLocationAutocomplete(query);
+  } catch (err) {
+    throw new InternalServerError(`Cannot fetch location autocomplete from OLX! Err: ${JSON.stringify(err)}`);
+  }
+  if (response.data.length === 0) {
+    throw new ObjectNotFoundError(`No locations found for query: ${query}`);
+  }
+  return response.data[0];
 }
