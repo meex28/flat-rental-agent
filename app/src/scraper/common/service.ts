@@ -1,17 +1,16 @@
 import {getSingleOfferFromOlx, searchOffersOnOlx} from "../olx/service";
-import {OlxSearchParams, Offer, OfferSummary} from "./types";
+import {Offer, OfferSummary} from "./types";
 import {getSingleOfferFromOtodom} from "../otodom/service";
 import {logger} from "../../utils/logger";
+import {OfferRequirements} from "@prisma/client";
 
 export const searchOffers = async (
   timestampFrom: number,
-  city: string,
-  searchParams: OlxSearchParams = {},
-  queryText?: string
+  requirements: OfferRequirements,
 ): Promise<Offer[]> => {
-  logger.info(`Start searching offer in ${city} with search params: ${JSON.stringify(searchParams)}`);
+  logger.info(`Start searching offers for requirements: ${JSON.stringify(requirements)}`);
 
-  const offers = await searchOffersOnOlx(timestampFrom, city, searchParams, queryText);
+  const offers = await searchOffersOnOlx(timestampFrom, requirements);
 
   const { olxUrls, otodomUrls } = categorizeUrlsByPlatform(offers);
 

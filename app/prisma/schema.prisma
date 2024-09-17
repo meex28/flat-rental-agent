@@ -20,7 +20,7 @@ model OfferRequirements {
   id            Int           @id @default(autoincrement())
   propertyType  PropertyType
   ownershipType OwnershipType
-  localization  String
+  location String
   user          User          @relation(fields: [userId], references: [id])
   userId        Int
 

@@ -1,32 +1,23 @@
-import {OlxSearchParams, Offer, OfferSummary} from "../common/types";
+import {Offer, OfferSummary} from "../common/types";
 import {parseOlxCreationDate, parseOlxPrice} from "./utils";
 import {marketplacePlatformBaseUrls, visitPage} from "../common/client";
 import {logger} from "../../utils/logger";
+import {OfferRequirements} from "@prisma/client";
+import {ownershipTypeUrlMappings, propertyTypeUrlMappings} from "./mappings";
 
 const olxBaseUrl = marketplacePlatformBaseUrls["OLX"];
 
 export const searchOffersOnOlx = async (
   timestampFrom: number,
-  city: string,
-  searchParams: OlxSearchParams = {},
-  queryText?: string
+  requirements: OfferRequirements
 ): Promise<OfferSummary[]> => {
-  const baseUrl = `/nieruchomosci/mieszkania/wynajem/${city}/`;
-  const queryTextPart = queryText ? `q-${queryText}` : '';
-  const orderSearchParams = {
-    "order": ["created_at:desc"]
-  }
-  const searchParamsPart = Object.entries({...searchParams, ...orderSearchParams})
-    .map(([key, value]) => value.map(v => `search[${key}]=${v}`))
-    .flat()
-    .join('&');
-  const fullUrl = `${baseUrl}${queryTextPart}?${searchParamsPart}`;
+  const url = buildSearchUrl(requirements);
 
-  const numberOfPages = await fetchNumberOfPagesOnSearchUrl(fullUrl);
+  const numberOfPages = await fetchNumberOfPagesOnSearchUrl(url);
 
   const offersPages: OfferSummary[][] = [];
   for(let i = 0; i < numberOfPages; i++) {
-    const currentPageOffers = await fetchOffersUrlsFromSinglePage(fullUrl, i + 1);
+    const currentPageOffers = await fetchOffersUrlsFromSinglePage(url, i + 1);
     // if there are no offers in given time window on current page we stop loading
     // because we order them by creation date
     if (currentPageOffers.length === 0) {
@@ -36,6 +27,24 @@ export const searchOffersOnOlx = async (
   }
 
   return offersPages.flat().filter(offer => offer?.createdAt.getTime() > timestampFrom);
+}
+
+const buildSearchUrl = (requirements: OfferRequirements) => {
+  const baseUrl = `/nieruchomosci` +
+    `/${propertyTypeUrlMappings[requirements.propertyType]}` +
+    `/${ownershipTypeUrlMappings[requirements.ownershipType]}` +
+    `/${requirements.location}/`;
+
+  const orderSearchParams = {
+    "order": ["created_at:desc"]
+  }
+
+  const searchParamsPart = Object.entries(orderSearchParams)
+    .map(([key, value]) => value.map(v => `search[${key}]=${v}`))
+    .flat()
+    .join('&');
+
+  return `${baseUrl}?${searchParamsPart}`;
 }
 
 const fetchNumberOfPagesOnSearchUrl = async (url: string): Promise<number> => {

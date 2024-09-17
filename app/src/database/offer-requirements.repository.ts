@@ -13,3 +13,5 @@ export const upsertOfferRequirements = (
     create: {...data, user: {connect: {id: userId}}},
   })
 }
+
+export const findAllRequirements = () => prisma.offerRequirements.findMany(); 

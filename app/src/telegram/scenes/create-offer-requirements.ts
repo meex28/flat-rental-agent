@@ -1,7 +1,7 @@
 import {WizardScene} from "telegraf/scenes";
 import {OwnershipType, PropertyType} from "@prisma/client";
 import {Markup} from "telegraf";
-import {AvailableScenes} from "../types";
+import {AvailableCommands, AvailableScenes} from "../types";
 import {saveUserOfferRequirements} from "../../service/offer-requirements.service";
 
 const propertyTypes = Object.values(PropertyType);
@@ -58,22 +58,22 @@ export const createOfferRequirements = new WizardScene<any>(
       ctx.reply("I'm sorry, I couldn't recognize that city name. Please try again with a valid Polish city name, without using Polish characters.");
       return;
     }
-    const localization = ctx.message.text;
-    ctx.wizard.state.offerRequirements.localization = localization;
+    const location = ctx.message.text;
+    ctx.wizard.state.offerRequirements.location = location;
 
     const {propertyType, ownershipType} = ctx.wizard.state.offerRequirements;
-    ctx.reply(`Thank you for providing all the details. Here's a summary of your requirements:
-    - Property type: ${propertyType}
-    - Purpose: ${ownershipType}
-    - Location: ${localization}`
+    ctx.reply("Thank you for providing all the details. Here's a summary of your requirements:" +
+      `\n- Property type: ${propertyType}` +
+      `\n- Purpose: ${ownershipType}` +
+      `\n- Location: ${location}`
     );
 
     const chatId = ctx.from.id;
-    await saveUserOfferRequirements(chatId, {propertyType, ownershipType, localization});
+    await saveUserOfferRequirements(chatId, {propertyType, ownershipType, location});
 
     ctx.reply(
       "I've saved these preferences and will start sending you notifications when matching offers are found. " +
-      "You can update these preferences anytime by typing /set_requirements."
+      `You can update these preferences anytime by typing /${AvailableCommands.SET_REQUIREMENTS}.`
     );
 
     return ctx.scene.leave();
