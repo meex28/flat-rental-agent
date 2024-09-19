@@ -49,7 +49,11 @@ export const createOfferRequirements = new WizardScene<any>(
       await ctx.reply("I'm sorry, I couldn't recognize that city name. Please try again with a valid Polish city name, without using Polish characters.");
       return;
     }
-    ctx.wizard.state.offerRequirements.location = ctx.message.text;
+
+    ctx.wizard.state.offerRequirements.location = {};
+    ctx.wizard.state.offerRequirements.location.name = ctx.message.text;
+    ctx.wizard.state.offerRequirements.location.distance = 0;
+
     await ctx.reply('Great! Now, let\'s set the minimum price in PLN (optional). Enter a number or type "skip" to omit.');
     return ctx.wizard.next();
   },
@@ -106,7 +110,7 @@ const generateRequirementsSummary = (requirements: CreateOfferRequirements): str
   let summary = "Thank you for providing all the details. Here's a summary of your requirements:" +
     `\n- Property type: ${requirements.propertyType}` +
     `\n- Purpose: ${requirements.ownershipType}` +
-    `\n- Location: ${requirements.location}`;
+    `\n- Location: ${requirements.location.name}`;
 
   if (requirements.minPrice !== undefined || requirements.maxPrice !== undefined) {
     summary += '\n- Price range:';

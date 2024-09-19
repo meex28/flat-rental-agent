@@ -14,4 +14,4 @@ export const upsertOfferRequirements = (
   })
 }
 
-export const findAllRequirements = () => prisma.offerRequirements.findMany(); 
+export const findAllRequirements = () => prisma.offerRequirements.findMany({include: {location: true}});

@@ -7,12 +7,13 @@ import {ownershipTypeUrlMappings, propertyTypeUrlMappings} from "./mappings";
 import {fetchLocationAutocomplete} from "./api";
 import {InternalServerError, ObjectNotFoundError} from "../../common/errors";
 import {OlxLocation} from "./types";
+import {OfferRequirementsWithLocation} from "../../database/types";
 
 const olxBaseUrl = marketplacePlatformBaseUrls["OLX"];
 
 export const searchOffersOnOlx = async (
   timestampFrom: number,
-  requirements: OfferRequirements
+  requirements: OfferRequirementsWithLocation,
 ): Promise<OfferSummary[]> => {
   const url = buildSearchUrl(requirements);
 
@@ -32,11 +33,11 @@ export const searchOffersOnOlx = async (
   return offersPages.flat().filter(offer => offer?.createdAt.getTime() > timestampFrom);
 }
 
-const buildSearchUrl = (requirements: OfferRequirements) => {
+const buildSearchUrl = (requirements: OfferRequirementsWithLocation) => {
   const baseUrl = `/nieruchomosci` +
     `/${propertyTypeUrlMappings[requirements.propertyType]}` +
     `/${ownershipTypeUrlMappings[requirements.ownershipType]}` +
-    `/${requirements.location_normalized_name}/`;
+    `/${requirements.location!!.normalized_name}/`;
 
   const orderSearchParams = {
     "order": ["created_at:desc"]

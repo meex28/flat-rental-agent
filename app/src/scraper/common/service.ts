@@ -2,11 +2,11 @@ import {getSingleOfferFromOlx, searchOffersOnOlx} from "../olx/service";
 import {Offer, OfferSummary} from "./types";
 import {getSingleOfferFromOtodom} from "../otodom/service";
 import {logger} from "../../utils/logger";
-import {OfferRequirements} from "@prisma/client";
+import {OfferRequirementsWithLocation} from "../../database/types";
 
 export const searchOffers = async (
   timestampFrom: number,
-  requirements: OfferRequirements,
+  requirements: OfferRequirementsWithLocation,
 ): Promise<Offer[]> => {
   logger.info(`Start searching offers for requirements: ${JSON.stringify(requirements)}`);
 
