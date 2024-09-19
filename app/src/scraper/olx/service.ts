@@ -1,4 +1,4 @@
-import {Offer, OfferSummary} from "../common/types";
+import {Offer, OfferSummary, OlxSearchParams} from "../common/types";
 import {parseOlxCreationDate, parseOlxPrice} from "./utils";
 import {marketplacePlatformBaseUrls, visitPage} from "../common/client";
 import {logger} from "../../utils/logger";
@@ -42,12 +42,37 @@ const buildSearchUrl = (requirements: OfferRequirements) => {
     "order": ["created_at:desc"]
   }
 
-  const searchParamsPart = Object.entries(orderSearchParams)
+  const filterSearchParams = buildFilterSearchParams(requirements);
+
+  const searchParamsPart = Object.entries({...orderSearchParams, ...filterSearchParams})
     .map(([key, value]) => value.map(v => `search[${key}]=${v}`))
     .flat()
     .join('&');
 
   return `${baseUrl}?${searchParamsPart}`;
+}
+
+const buildFilterSearchParams = (requirements: OfferRequirements): OlxSearchParams => {
+  // some params are passed as query params and some as path variables
+  type OlxParamsPassedInQuery = Pick<
+    OfferRequirements,
+    "minSize" | "maxSize" | "minPrice" | "maxPrice"
+  >;
+  const olxParamsKeys: Record<keyof OlxParamsPassedInQuery, string> = {
+    minPrice: "filter_float_price:from",
+    maxPrice: "filter_float_price:to",
+    minSize: "filter_float_m:from",
+    maxSize: "filter_float_m:to"
+  }
+  return Object.entries(olxParamsKeys)
+    .reduce(
+      (acc, [requirementsKey, olxKey]) => {
+        const value = requirements[requirementsKey as keyof OfferRequirements];
+        if (value == undefined) return acc;
+        return {...acc, [olxKey]: [requirements[requirementsKey as keyof OfferRequirements]]};
+      },
+      {}
+    );
 }
 
 const fetchNumberOfPagesOnSearchUrl = async (url: string): Promise<number> => {
