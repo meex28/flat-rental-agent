@@ -3,9 +3,11 @@ import {getUserByTelegramChatId} from "./user.service";
 import {findAllRequirements, upsertOfferRequirements} from "../database/offer-requirements.repository";
 import {getOlxLocation} from "../scraper/olx/service";
 
+export type CreateOfferRequirements = Omit<Prisma.OfferRequirementsCreateInput, "user" | "location_normalized_name">
+
 export const saveUserOfferRequirements = async (
   telegramChatId: number,
-  offerRequirements: Omit<Prisma.OfferRequirementsCreateInput, "user" | "location_normalized_name">
+  offerRequirements: CreateOfferRequirements
 ) => {
   const user = await getUserByTelegramChatId(telegramChatId);
   const olxLocation = await getOlxLocation(offerRequirements.location);
