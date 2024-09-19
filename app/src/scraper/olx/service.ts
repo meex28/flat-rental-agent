@@ -2,18 +2,17 @@ import {Offer, OfferSummary, OlxSearchParams} from "../common/types";
 import {parseOlxCreationDate, parseOlxPrice} from "./utils";
 import {marketplacePlatformBaseUrls, visitPage} from "../common/client";
 import {logger} from "../../utils/logger";
-import {OfferRequirements} from "@prisma/client";
 import {ownershipTypeUrlMappings, propertyTypeUrlMappings} from "./mappings";
 import {fetchLocationAutocomplete} from "./api";
 import {InternalServerError, ObjectNotFoundError} from "../../common/errors";
 import {OlxLocation} from "./types";
-import {OfferRequirementsWithLocation} from "../../database/types";
+import {OfferRequirementsDto} from "../../dto/offer-requirements";
 
 const olxBaseUrl = marketplacePlatformBaseUrls["OLX"];
 
 export const searchOffersOnOlx = async (
   timestampFrom: number,
-  requirements: OfferRequirementsWithLocation,
+  requirements: OfferRequirementsDto,
 ): Promise<OfferSummary[]> => {
   const url = buildSearchUrl(requirements);
 
@@ -33,7 +32,7 @@ export const searchOffersOnOlx = async (
   return offersPages.flat().filter(offer => offer?.createdAt.getTime() > timestampFrom);
 }
 
-const buildSearchUrl = (requirements: OfferRequirementsWithLocation) => {
+const buildSearchUrl = (requirements: OfferRequirementsDto) => {
   const baseUrl = `/nieruchomosci` +
     `/${propertyTypeUrlMappings[requirements.propertyType]}` +
     `/${ownershipTypeUrlMappings[requirements.ownershipType]}` +
@@ -53,10 +52,10 @@ const buildSearchUrl = (requirements: OfferRequirementsWithLocation) => {
   return `${baseUrl}?${searchParamsPart}`;
 }
 
-const buildFilterSearchParams = (requirements: OfferRequirements): OlxSearchParams => {
+const buildFilterSearchParams = (requirements: OfferRequirementsDto): OlxSearchParams => {
   // some params are passed as query params and some as path variables
   type OlxParamsPassedInQuery = Pick<
-    OfferRequirements,
+    OfferRequirementsDto,
     "minSize" | "maxSize" | "minPrice" | "maxPrice"
   >;
   const olxParamsKeys: Record<keyof OlxParamsPassedInQuery, string> = {
@@ -68,9 +67,9 @@ const buildFilterSearchParams = (requirements: OfferRequirements): OlxSearchPara
   return Object.entries(olxParamsKeys)
     .reduce(
       (acc, [requirementsKey, olxKey]) => {
-        const value = requirements[requirementsKey as keyof OfferRequirements];
+        const value = requirements[requirementsKey as keyof OfferRequirementsDto];
         if (value == undefined) return acc;
-        return {...acc, [olxKey]: [requirements[requirementsKey as keyof OfferRequirements]]};
+        return {...acc, [olxKey]: [requirements[requirementsKey as keyof OfferRequirementsDto]]};
       },
       {}
     );

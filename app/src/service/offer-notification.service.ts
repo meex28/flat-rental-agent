@@ -4,7 +4,7 @@ import {logger} from "../utils/logger";
 import {searchOffers} from "../scraper/common/service";
 import {sendOffersNotifications} from "./notification.service";
 import {closeCurrentBrowser} from "../scraper/common/client";
-import {OfferRequirementsWithLocation} from "../database/types";
+import {OfferRequirementsDto} from "../dto/offer-requirements";
 
 export const runOfferNotificationProcess = async (minutesInterval: number) => {
   const polandNowTime = getCurrentTimeInPoland();
@@ -18,9 +18,9 @@ export const runOfferNotificationProcess = async (minutesInterval: number) => {
   logger.info(`Finished notifying about offers!`);
 }
 
-const runOfferNotificationProcessForSingleRequirements = async (lastCheckTimestamp: number, requirements: OfferRequirementsWithLocation) => {
+const runOfferNotificationProcessForSingleRequirements = async (lastCheckTimestamp: number, requirements: OfferRequirementsDto) => {
   logger.info(`Start notifying about offers for requirements: ${JSON.stringify(requirements)}`);
   const offers = await searchOffers(lastCheckTimestamp, requirements);
-  await sendOffersNotifications(offers, requirements.userId);
+  await sendOffersNotifications(offers, requirements.user.id);
   logger.info(`Finished notifying about offers for requirements: ${JSON.stringify(requirements)}`);
 }

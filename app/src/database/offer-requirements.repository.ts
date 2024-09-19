@@ -1,17 +1,39 @@
-import {Prisma} from "@prisma/client";
 import {prisma} from "./index";
+import {OfferRequirementsDto} from "../dto/offer-requirements";
 
-export const upsertOfferRequirements = (
-  userId: number,
-  data: Omit<Prisma.OfferRequirementsCreateInput, 'user'>
+export const upsertOfferRequirements = async (
+  data: OfferRequirementsDto
 ) => {
+  const dataToSave = {...data, user: undefined}
   return prisma.offerRequirements.upsert({
     where: {
-      userId,
+      userId: data.user.id,
     },
-    update: data,
-    create: {...data, user: {connect: {id: userId}}},
-  })
-}
+    update: {
+      ...dataToSave,
+      location: data.location
+        ? {
+          upsert: {
+            create: {...data.location},
+            update: {...data.location},
+          },
+        }
+        : undefined
+    },
+    create: {
+      ...dataToSave,
+      userId: data.user.id,
+      location: data.location
+        ? {
+          create: {...data.location},
+        }
+        : undefined,
+    },
+    include: {
+      location: true,
+    }
+  });
+};
 
-export const findAllRequirements = () => prisma.offerRequirements.findMany({include: {location: true}});
+export const findAllRequirements = (): Promise<OfferRequirementsDto[]> =>
+  prisma.offerRequirements.findMany({include: {location: true, user: true}}) as Promise<OfferRequirementsDto[]>;

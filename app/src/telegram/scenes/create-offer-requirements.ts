@@ -2,8 +2,9 @@ import {WizardScene} from "telegraf/scenes";
 import {OwnershipType, PropertyType} from "@prisma/client";
 import {Markup} from "telegraf";
 import {AvailableCommands, AvailableScenes} from "../types";
-import {CreateOfferRequirements, saveUserOfferRequirements} from "../../service/offer-requirements.service";
+import {saveUserOfferRequirements} from "../../service/offer-requirements.service";
 import {handleOptionalNumericInput} from "./utils";
+import {CreateOfferRequirementsDto} from "../../dto/offer-requirements";
 
 const propertyTypes = Object.values(PropertyType);
 const ownershipTypes = Object.values(OwnershipType);
@@ -52,7 +53,17 @@ export const createOfferRequirements = new WizardScene<any>(
 
     ctx.wizard.state.offerRequirements.location = {};
     ctx.wizard.state.offerRequirements.location.name = ctx.message.text;
-    ctx.wizard.state.offerRequirements.location.distance = 0;
+
+    await ctx.reply('How far from this location would you like to search? (Enter distance in kilometers, or type "0" if not applicable)');
+
+    return ctx.wizard.next();
+  },
+  async (ctx) => {
+    const distance = await handleOptionalNumericInput(ctx, "distance", 0);
+    if (distance && Number.isNaN(distance)) {
+      return;
+    }
+    ctx.wizard.state.offerRequirements.location.distance = distance ?? 0;
 
     await ctx.reply('Great! Now, let\'s set the minimum price in PLN (optional). Enter a number or type "skip" to omit.');
     return ctx.wizard.next();
@@ -106,11 +117,15 @@ export const createOfferRequirements = new WizardScene<any>(
   }
 );
 
-const generateRequirementsSummary = (requirements: CreateOfferRequirements): string => {
+const generateRequirementsSummary = (requirements: CreateOfferRequirementsDto): string => {
   let summary = "Thank you for providing all the details. Here's a summary of your requirements:" +
     `\n- Property type: ${requirements.propertyType}` +
     `\n- Purpose: ${requirements.ownershipType}` +
     `\n- Location: ${requirements.location.name}`;
+
+  if (requirements.location.distance > 0) {
+    summary += ` (+${requirements.location.distance} km)`;
+  }
 
   if (requirements.minPrice !== undefined || requirements.maxPrice !== undefined) {
     summary += '\n- Price range:';

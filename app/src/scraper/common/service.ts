@@ -2,11 +2,11 @@ import {getSingleOfferFromOlx, searchOffersOnOlx} from "../olx/service";
 import {Offer, OfferSummary} from "./types";
 import {getSingleOfferFromOtodom} from "../otodom/service";
 import {logger} from "../../utils/logger";
-import {OfferRequirementsWithLocation} from "../../database/types";
+import {OfferRequirementsDto} from "../../dto/offer-requirements";
 
 export const searchOffers = async (
   timestampFrom: number,
-  requirements: OfferRequirementsWithLocation,
+  requirements: OfferRequirementsDto,
 ): Promise<Offer[]> => {
   logger.info(`Start searching offers for requirements: ${JSON.stringify(requirements)}`);
 
