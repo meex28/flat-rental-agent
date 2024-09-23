@@ -3,7 +3,7 @@ import {CreateLocationDto, LocationDto} from "./location";
 import {UserDto} from "./user";
 
 export type OfferRequirementsDto = Omit<Prisma.OfferRequirementsCreateInput, "user" | "location">
-  & { location: LocationDto, id: number, user: UserDto };
+  & { location: LocationDto, id?: number, user: UserDto };
 
-export type CreateOfferRequirementsDto = Omit<OfferRequirementsDto, "location" | "user">
+export type CreateOfferRequirementsDto = Omit<OfferRequirementsDto, "location" | "user" | "id">
   & { location: CreateLocationDto };

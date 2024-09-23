@@ -1,19 +1,20 @@
-import {Telegraf} from "telegraf";
-import {AvailableCommands, AvailableScenes, CustomTelegrafContext} from "./types";
+import {AvailableCommands, AvailableConversations, BotContext} from "./types";
 import {onUserTelegramSubscription} from "../service/user.service";
+import {Bot} from "grammy";
 
 const commandsDescriptions: Record<AvailableCommands, string> = {
   start: "Start receiving notifications",
   set_requirements: "Set requirements of offers that you want to receive notifications",
 }
 
-export const initializeTelegramCommands = async (telegramBot: Telegraf<CustomTelegrafContext>) => {
-  await telegramBot.telegram.setMyCommands(
+export const initializeTelegramCommands = async (telegramBot: Bot<BotContext>) => {
+  await telegramBot.api.setMyCommands(
     Object.entries(commandsDescriptions).map(([command, description]) => ({command, description}))
   );
 
-  telegramBot.start(async (ctx) => {
-    const chatId = ctx.from.id;
+  telegramBot.command(AvailableCommands.START, async (ctx) => {
+    const chat = await ctx.getChat();
+    const chatId = chat.id;
     const hasUserAlreadySubscribed = await onUserTelegramSubscription(chatId);
 
     const welcomeMessage =
@@ -32,7 +33,7 @@ export const initializeTelegramCommands = async (telegramBot: Telegraf<CustomTel
     await ctx.reply(hasUserAlreadySubscribed ? alreadySubscribedMessage : welcomeMessage);
   });
 
-  telegramBot.command(AvailableCommands.SET_REQUIREMENTS, (ctx) => {
-    ctx.scene.enter(AvailableScenes.CREATE_OFFER_REQUIREMENTS);
+  telegramBot.command(AvailableCommands.SET_REQUIREMENTS, async (ctx) => {
+    await ctx.conversation.enter(AvailableConversations.SET_OFFER_REQUIREMENTS);
   })
 }

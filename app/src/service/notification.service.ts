@@ -20,5 +20,5 @@ const buildMessageAboutOffer = (offer: Offer) =>
   `🌐 [View Offer](${offer.url})`
 
 const sendTelegramNotification = async (telegramChatId: number, message: string) => {
-  await telegramBot.telegram.sendMessage(telegramChatId, message, {parse_mode: "Markdown"})
+  await telegramBot.api.sendMessage(telegramChatId, message, {parse_mode: "Markdown"})
 }

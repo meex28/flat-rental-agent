@@ -1,11 +1,11 @@
-import {Context} from "telegraf";
-import {SceneContext} from "telegraf/scenes";
+import {Conversation, ConversationFlavor} from "@grammyjs/conversations";
+import {Context} from "grammy";
 
-export interface CustomTelegrafContext extends Context, SceneContext {
-}
+export type BotContext = Context & ConversationFlavor;
+export type BotConversation = Conversation<BotContext>;
 
-export enum AvailableScenes {
-  CREATE_OFFER_REQUIREMENTS = "CREATE_OFFER_REQUIREMENTS_ID"
+export enum AvailableConversations {
+  SET_OFFER_REQUIREMENTS = "SET_OFFER_REQUIREMENTS"
 }
 
 export enum AvailableCommands {

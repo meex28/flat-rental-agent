@@ -1,21 +1,28 @@
-import {session, Telegraf} from "telegraf";
 import {initializeTelegramCommands} from "./commands";
-import {initializeTelegramScenes} from "./scenes";
-import {CustomTelegrafContext} from "./types";
+import {Bot, session} from "grammy";
+import {AvailableConversations, BotContext} from "./types";
+import {conversations, createConversation} from "@grammyjs/conversations";
+import {setRequirementsConversation} from "./conversations/set-requirements";
 
-export let telegramBot: Telegraf<CustomTelegrafContext>;
+export let telegramBot: Bot<BotContext>;
 
 export const launchTelegramBot = async () => {
   const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
-  telegramBot = new Telegraf(telegramBotToken!!);
-  telegramBot.use(session());
+  telegramBot = new Bot(telegramBotToken!!);
+  telegramBot.use(session({
+    initial() {
+      return {};
+    }
+  }));
+  telegramBot.use(conversations());
 
-  initializeTelegramScenes(telegramBot);
+  telegramBot.use(createConversation(setRequirementsConversation, AvailableConversations.SET_OFFER_REQUIREMENTS));
+
   await initializeTelegramCommands(telegramBot);
 
-  telegramBot.launch();
+  telegramBot.start();
 
   // Enable graceful stop
-  process.once('SIGINT', () => telegramBot.stop('SIGINT'))
-  process.once('SIGTERM', () => telegramBot.stop('SIGTERM'))
+  process.once('SIGINT', () => telegramBot.stop())
+  process.once('SIGTERM', () => telegramBot.stop())
 }
