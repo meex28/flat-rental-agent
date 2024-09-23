@@ -2,6 +2,7 @@ import {getUserByTelegramChatId} from "./user.service";
 import {findAllRequirements, upsertOfferRequirements} from "../database/offer-requirements.repository";
 import {getOlxLocation} from "../scraper/olx/service";
 import {CreateOfferRequirementsDto} from "../dto/offer-requirements";
+import {ObjectNotFoundError} from "../common/errors";
 
 export const saveUserOfferRequirements = async (
   telegramChatId: number,
@@ -20,6 +21,19 @@ export const saveUserOfferRequirements = async (
     user,
     location,
   });
+}
+
+export const getOfferRequirementsByTelegramChatId = async (telegramChatId: number) => {
+  const user = await getUserByTelegramChatId(telegramChatId);
+
+  if (user.offerRequirements?.length === 0) {
+    throw new ObjectNotFoundError("User has no offer requirements")
+  }
+
+  return {
+    ...user.offerRequirements[0],
+    user
+  };
 }
 
 export const getAllUserOfferRequirements = async () => {

@@ -18,5 +18,6 @@ export enum AvailableConversations {
 
 export enum AvailableCommands {
   START = "start",
-  SET_REQUIREMENTS = "set_requirements"
+  SET_REQUIREMENTS = "set_requirements",
+  SHOW_REQUIREMENTS = "show_requirements"
 }

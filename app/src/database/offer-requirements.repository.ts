@@ -37,3 +37,9 @@ export const upsertOfferRequirements = async (
 
 export const findAllRequirements = (): Promise<OfferRequirementsDto[]> =>
   prisma.offerRequirements.findMany({include: {location: true, user: true}}) as Promise<OfferRequirementsDto[]>;
+
+export const findRequirementsByUserId = (userId: number): Promise<OfferRequirementsDto | null> =>
+  prisma.offerRequirements.findFirst({
+    where: {userId},
+    include: {location: true, user: true}
+  }) as Promise<OfferRequirementsDto | null>;

@@ -81,17 +81,17 @@ const setRequirementsConversation = async (conversation: BotConversation, ctx: B
   };
 
   const summary = generateRequirementsSummary(ctx, offerRequirements);
-  await ctx.reply(summary);
+  await ctx.reply(ctx.t("set-requirements-finish") + " " + summary);
 
   const chatId = ctx.from?.id;
   if (chatId) {
     await saveUserOfferRequirements(chatId, offerRequirements);
   }
 
-  await ctx.reply(ctx.t("set-requirements-finish"));
+  await ctx.reply(ctx.t("set-requirements-save-finish"));
 };
 
-const generateRequirementsSummary = (ctx: BotContext, requirements: CreateOfferRequirementsDto): string => {
+export const generateRequirementsSummary = (ctx: BotContext, requirements: CreateOfferRequirementsDto): string => {
   const addRange = (
     label: string,
     min: number | undefined | null,
