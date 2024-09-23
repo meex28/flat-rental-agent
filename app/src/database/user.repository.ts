@@ -1,17 +1,10 @@
 import {prisma} from "./index";
-import {Prisma, User} from "@prisma/client";
+import {User} from "@prisma/client";
+import {CreateUserDto} from "../dto/user";
 
-export const saveUser = async (user: Prisma.UserCreateInput) => {
+export const saveUser = async (user: CreateUserDto) => {
   await prisma.user.create({
     data: user
-  })
-};
-
-export const deleteUserByTelegramChatId = async (telegramChatId: number) => {
-  await prisma.user.deleteMany({
-    where: {
-      telegram_chat_id: telegramChatId
-    }
   })
 };
 

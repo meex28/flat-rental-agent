@@ -1,6 +1,6 @@
 import {Telegraf} from "telegraf";
-import {saveUser, userExistsByTelegramChatId} from "../database/user.repository";
 import {AvailableCommands, AvailableScenes, CustomTelegrafContext} from "./types";
+import {onUserTelegramSubscription} from "../service/user.service";
 
 const commandsDescriptions: Record<AvailableCommands, string> = {
   start: "Start receiving notifications",
@@ -14,14 +14,22 @@ export const initializeTelegramCommands = async (telegramBot: Telegraf<CustomTel
 
   telegramBot.start(async (ctx) => {
     const chatId = ctx.from.id;
-    const userAlreadySubscribed = await userExistsByTelegramChatId(chatId);
+    const hasUserAlreadySubscribed = await onUserTelegramSubscription(chatId);
 
-    if(userAlreadySubscribed) {
-      await ctx.reply('You are already on the notification list!')
-    } else {
-      await saveUser({ telegram_chat_id: chatId });
-      await ctx.reply('You have been added to the notification list!')
-    }
+    const welcomeMessage =
+      "🏠 Welcome to FlatRentalAgent! I'm here to help you discover your ideal place.\n\n" +
+      "To get started, please tell me about your dream property using the " +
+      `/${AvailableCommands.SET_REQUIREMENTS} command. Once you've set your preferences, ` +
+      "I'll keep an eye out and notify you whenever I find matching properties.\n\n" +
+      "Happy house hunting! 🔍🏡";
+
+    const alreadySubscribedMessage =
+      "Welcome back! 👋 It's great to see you again.\n\n" +
+      "I'm still actively searching for properties that match your requirements. " +
+      "If you'd like to update your preferences, just use the " +
+      `/${AvailableCommands.SET_REQUIREMENTS} command.\n\n`;
+
+    await ctx.reply(hasUserAlreadySubscribed ? alreadySubscribedMessage : welcomeMessage);
   });
 
   telegramBot.command(AvailableCommands.SET_REQUIREMENTS, (ctx) => {
