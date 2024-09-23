@@ -1,45 +1,43 @@
 import {InlineKeyboard} from "grammy";
 import {OwnershipType, PropertyType} from "@prisma/client";
-import {AvailableCommands, BotContext, BotConversation} from "../types";
+import {BotContext, BotConversation} from "../types";
 import {saveUserOfferRequirements} from "../../service/offer-requirements.service";
 import {CreateOfferRequirementsDto} from "../../dto/offer-requirements";
 
 const propertyTypes = Object.values(PropertyType);
 const ownershipTypes = Object.values(OwnershipType);
 
-const invalidInputUsingButtonsMessage = "Please use the provided buttons to make your selection. If you don't see the buttons, you may need to update your Telegram app.";
-
 const setRequirementsConversation = async (conversation: BotConversation, ctx: BotContext) => {
-  await ctx.reply("Hi! I'll help you set up your preferences for offers you will be notified about. Let's get started!");
+  await ctx.reply(ctx.t("set-requirements-start"));
 
   const propertyTypeKeyboard = new InlineKeyboard();
   propertyTypes.forEach(type => propertyTypeKeyboard.text(type, type));
-  await ctx.reply("What type of property are you interested in?", {reply_markup: propertyTypeKeyboard});
+  await ctx.reply(ctx.t("set-requirements-property-type-question"), {reply_markup: propertyTypeKeyboard});
   const propertyTypeCtx = await conversation.wait();
   const propertyType = propertyTypeCtx.callbackQuery?.data?.toUpperCase() as PropertyType;
   if (!propertyTypes.includes(propertyType)) {
-    await ctx.reply(invalidInputUsingButtonsMessage);
+    await ctx.reply(ctx.t("invalid-input-using-buttons"));
     return;
   }
 
   const ownershipTypeKeyboard = new InlineKeyboard();
   ownershipTypes.forEach(type => ownershipTypeKeyboard.text(type, type));
-  await ctx.reply("Great choice! Are you looking to buy or rent?", {reply_markup: ownershipTypeKeyboard});
+  await ctx.reply(ctx.t("set-requirements-ownership-type-question"), {reply_markup: ownershipTypeKeyboard});
   const ownershipTypeCtx = await conversation.wait();
   const ownershipType = ownershipTypeCtx.callbackQuery?.data?.toUpperCase() as OwnershipType;
   if (!ownershipTypes.includes(ownershipType)) {
-    await ctx.reply(invalidInputUsingButtonsMessage);
+    await ctx.reply(ctx.t("invalid-input-using-buttons"));
     return;
   }
 
-  await ctx.reply('Understood. Now, where are you looking for this property? Please provide the city name without Polish characters, e.g., "Krakow".');
+  await ctx.reply(ctx.t("set-requirements-location-name-question"));
   const locationCtx = await conversation.wait();
   const location = {name: locationCtx.message?.text || '', distance: 0};
 
   const distance = await handleOptionalNumericInput(
     ctx,
     conversation,
-    "How far from this location would you like to search? (Enter distance in kilometers, or type \"0\" if not applicable)",
+    ctx.t("set-requirements-location-distance-question"),
     0
   );
   location.distance = distance ?? 0;
@@ -47,28 +45,28 @@ const setRequirementsConversation = async (conversation: BotConversation, ctx: B
   const minPrice = await handleOptionalNumericInput(
     ctx,
     conversation,
-    'Great! Now, let\'s set the minimum price in PLN (optional). Enter a number or type "skip" to omit.',
+    ctx.t("set-requirements-min-price-question"),
     0
   );
 
   const maxPrice = await handleOptionalNumericInput(
     ctx,
     conversation,
-    'Great! Now, let\'s set the maximum price in PLN (optional). Enter a number or type "skip" to omit.',
+    ctx.t("set-requirements-max-price-question"),
     minPrice
   );
 
   const minSize = await handleOptionalNumericInput(
     ctx,
     conversation,
-    'Great! Now, let\'s set the minimum size in square meters (m²) (optional). Enter a number or type "skip" to omit.',
+    ctx.t("set-requirements-min-size-question"),
     0
   );
 
   const maxSize = await handleOptionalNumericInput(
     ctx,
     conversation,
-    'Finally, let\'s set the maximum size in square meters (m²) (optional). Enter a number or type "skip" to omit.',
+    ctx.t("set-requirements-max-size-question"),
     minSize
   );
 
@@ -82,7 +80,7 @@ const setRequirementsConversation = async (conversation: BotConversation, ctx: B
     maxSize
   };
 
-  const summary = generateRequirementsSummary(offerRequirements);
+  const summary = generateRequirementsSummary(ctx, offerRequirements);
   await ctx.reply(summary);
 
   const chatId = ctx.from?.id;
@@ -90,33 +88,48 @@ const setRequirementsConversation = async (conversation: BotConversation, ctx: B
     await saveUserOfferRequirements(chatId, offerRequirements);
   }
 
-  await ctx.reply(
-    "I've saved these preferences and will start sending you notifications when matching offers are found. " +
-    `You can update these preferences anytime by typing /${AvailableCommands.SET_REQUIREMENTS}.`
-  );
+  await ctx.reply(ctx.t("set-requirements-finish"));
 };
 
-const generateRequirementsSummary = (requirements: CreateOfferRequirementsDto): string => {
-  let summary = "Thank you for providing all the details. Here's a summary of your requirements:" +
-    `\n- Property type: ${requirements.propertyType}` +
-    `\n- Purpose: ${requirements.ownershipType}` +
-    `\n- Location: ${requirements.location.name}`;
+const generateRequirementsSummary = (ctx: BotContext, requirements: CreateOfferRequirementsDto): string => {
+  const addRange = (
+    label: string,
+    min: number | undefined | null,
+    max: number | undefined | null,
+    unit: string,
+  ): string => {
+    if (min != undefined && max != undefined) {
+      return `\n- ${label}: ${ctx.t("full-range", {min, max, unit})}`;
+    } else if (min != undefined) {
+      return `\n- ${label}: ${ctx.t("lower-bound-range", {min, unit})}`;
+    } else if (max != undefined) {
+      return `\n- ${label}: ${ctx.t("upper-bound-range", {max, unit})}`;
+    }
+    return '';
+  };
+
+  let summary = `${ctx.t("set-requirements-summary-message")}\n` +
+    `- ${ctx.t("property-type")}: ${requirements.propertyType}\n` +
+    `- ${ctx.t("purpose")}: ${requirements.ownershipType}\n` +
+    `- ${ctx.t("location")}: ${requirements.location.name}`;
 
   if (requirements.location.distance > 0) {
-    summary += ` (+${requirements.location.distance} km)`;
+    summary += ` ${ctx.t("distance-range-value", {distance: requirements.location.distance})}`;
   }
 
-  if (requirements.minPrice !== undefined || requirements.maxPrice !== undefined) {
-    summary += '\n- Price range:';
-    if (requirements.minPrice !== undefined) summary += ` From ${requirements.minPrice} PLN`;
-    if (requirements.maxPrice !== undefined) summary += ` Up to ${requirements.maxPrice} PLN`;
-  }
+  summary += addRange(
+    ctx.t("price"),
+    requirements.minPrice,
+    requirements.maxPrice,
+    "PLN"
+  );
 
-  if (requirements.minSize !== undefined || requirements.maxSize !== undefined) {
-    summary += '\n- Size range:';
-    if (requirements.minSize !== undefined) summary += ` From ${requirements.minSize} m²`;
-    if (requirements.maxSize !== undefined) summary += ` Up to ${requirements.maxSize} m²`;
-  }
+  summary += addRange(
+    ctx.t("size"),
+    requirements.minSize,
+    requirements.maxSize,
+    "m²"
+  );
 
   return summary;
 };
@@ -140,7 +153,9 @@ const handleOptionalNumericInput = async (
   }
 
   await ctx.reply(
-    `Please enter a valid number${minValue !== undefined ? ` greater than or equal to ${minValue}` : ''} or type "skip" to omit.`
+    minValue === undefined
+      ? ctx.t("optional-numeric-input-error")
+      : ctx.t("optional-numeric-input-boundary-error", {minValue})
   )
 
   return await handleOptionalNumericInput(ctx, conversation, prompt, minValue);

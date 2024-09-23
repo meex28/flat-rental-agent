@@ -16,21 +16,8 @@ export const initializeTelegramCommands = async (telegramBot: Bot<BotContext>) =
     const chat = await ctx.getChat();
     const chatId = chat.id;
     const hasUserAlreadySubscribed = await onUserTelegramSubscription(chatId);
-
-    const welcomeMessage =
-      "🏠 Welcome to FlatRentalAgent! I'm here to help you discover your ideal place.\n\n" +
-      "To get started, please tell me about your dream property using the " +
-      `/${AvailableCommands.SET_REQUIREMENTS} command. Once you've set your preferences, ` +
-      "I'll keep an eye out and notify you whenever I find matching properties.\n\n" +
-      "Happy house hunting! 🔍🏡";
-
-    const alreadySubscribedMessage =
-      "Welcome back! 👋 It's great to see you again.\n\n" +
-      "I'm still actively searching for properties that match your requirements. " +
-      "If you'd like to update your preferences, just use the " +
-      `/${AvailableCommands.SET_REQUIREMENTS} command.\n\n`;
-
-    await ctx.reply(hasUserAlreadySubscribed ? alreadySubscribedMessage : welcomeMessage);
+    const response = ctx.t(hasUserAlreadySubscribed ? "start-message-already-subscribed" : "start-message");
+    await ctx.reply(response);
   });
 
   telegramBot.command(AvailableCommands.SET_REQUIREMENTS, async (ctx) => {

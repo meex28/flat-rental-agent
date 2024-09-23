@@ -1,7 +1,15 @@
 import {Conversation, ConversationFlavor} from "@grammyjs/conversations";
-import {Context} from "grammy";
+import {Context, SessionFlavor} from "grammy";
+import {I18nFlavor} from "@grammyjs/i18n";
 
-export type BotContext = Context & ConversationFlavor;
+export interface BotSessionData {
+  language_code?: string;
+}
+
+export type BotContext = Context
+  & ConversationFlavor
+  & SessionFlavor<BotSessionData>
+  & I18nFlavor;
 export type BotConversation = Conversation<BotContext>;
 
 export enum AvailableConversations {
