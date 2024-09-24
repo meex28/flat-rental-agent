@@ -1,3 +1,5 @@
+import {marketplacePlatformBaseUrls} from "../common/client";
+
 export const parseOlxPrice = (text: string): number => {
   return parseInt(text.replace(' zł', '').replace(' ', ''));
 }
@@ -34,3 +36,15 @@ export const parseOlxCreationDate = (text: string): Date => {
     return parsedDate;
   }
 };
+
+/**
+ * Parses the URL from OLX search page. It appends the OLX if URL is not complete.
+ * @param url - The URL to be parsed
+ * @returns The parsed OLX offer URL
+ */
+export const parseOlxOfferUrl = (url: string) => {
+  if (url.startsWith("https://")) {
+    return url;
+  }
+  return marketplacePlatformBaseUrls["OLX"] + url;
+}

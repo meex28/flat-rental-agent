@@ -1,9 +1,9 @@
-import {Offer} from "../scraper/common/types";
+import {OfferSummary} from "../scraper/common/types";
 import {logger} from "../utils/logger";
 import {telegramBot} from "../telegram/init";
 import {getUserById} from "./user.service";
 
-export const sendOffersNotifications = async (offers: Offer[], userId: number) => {
+export const sendOffersNotifications = async (offers: OfferSummary[], userId: number) => {
   logger.info(`Start sending notifications about ${offers.length} offers for user with id: ${userId}`);
 
   const user = await getUserById(userId);
@@ -13,9 +13,10 @@ export const sendOffersNotifications = async (offers: Offer[], userId: number) =
   );
 }
 
-const buildMessageAboutOffer = (offer: Offer) =>
+const buildMessageAboutOffer = (offer: OfferSummary) =>
   `🏠 New Property Offer Alert!\n` +
   `*Title:* ${offer.title}\n` +
+  `📍 Location: ${offer.location}\n` +
   `💰 Price: ${offer.price} PLN\n` +
   `🌐 [View Offer](${offer.url})`
 

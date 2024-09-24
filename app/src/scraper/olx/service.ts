@@ -1,5 +1,5 @@
 import {Offer, OfferSummary, OlxSearchParams} from "../common/types";
-import {parseOlxCreationDate, parseOlxPrice} from "./utils";
+import {parseOlxCreationDate, parseOlxOfferUrl, parseOlxPrice} from "./utils";
 import {marketplacePlatformBaseUrls, visitPage} from "../common/client";
 import {logger} from "../../utils/logger";
 import {ownershipTypeUrlMappings, propertyTypeUrlMappings} from "./mappings";
@@ -7,6 +7,7 @@ import {fetchLocationAutocomplete} from "./api";
 import {InternalServerError, ObjectNotFoundError} from "../../common/errors";
 import {OlxLocation} from "./types";
 import {OfferRequirementsDto} from "../../dto/offer-requirements";
+import {getMarketplacePlatformFromUrl} from "../common/service";
 
 const olxBaseUrl = marketplacePlatformBaseUrls["OLX"];
 
@@ -20,7 +21,7 @@ export const searchOffersOnOlx = async (
 
   const offersPages: OfferSummary[][] = [];
   for (let i = 0; i < numberOfPages; i++) {
-    const currentPageOffers = await fetchOffersUrlsFromSinglePage(url, i + 1);
+    const currentPageOffers = await fetchOffersSummariesFromSinglePage(url, i + 1);
     // if there are no offers in given time window on current page we stop loading
     // because we order them by creation date
     if (currentPageOffers.length === 0) {
@@ -89,24 +90,31 @@ const fetchNumberOfPagesOnSearchUrl = async (url: string): Promise<number> => {
   return Number.parseInt(rawNumberOfPages);
 }
 
-const fetchOffersUrlsFromSinglePage = async (url: string, pageNumber: number): Promise<OfferSummary[]> => {
+const fetchOffersSummariesFromSinglePage = async (url: string, pageNumber: number): Promise<OfferSummary[]> => {
   const page = await visitPage(`${url}&page=${pageNumber}`, "OLX");
   const rawOffers = await page.evaluate(() => {
     const offers = document.querySelectorAll('[data-testid="l-card"]')
     return Array.from(offers).map((offer) => {
       const cardTitle = offer.querySelector('[data-cy="ad-card-title"]');
+      const title = cardTitle?.querySelector('h6')?.textContent;
       const url = cardTitle?.querySelector('a')?.getAttribute('href');
-
       const locationAndDate = offer.querySelector('[data-testid="location-date"]');
-      const [_, date] = locationAndDate?.textContent?.split(' - ') ?? [undefined, undefined];
+      const [location, date] = locationAndDate?.textContent?.split(' - ') ?? [undefined, undefined];
+      const price = offer.querySelector('[data-testid="ad-price"]')?.textContent;
 
-      return {url, createdAt: date};
+      return {url, title, location, createdAt: date, price};
     });
   });
   await page.close();
 
   return rawOffers.filter(offer => !!offer.url && !!offer.createdAt)
-    .map(offer => ({...offer, createdAt: parseOlxCreationDate(offer.createdAt!!)} as OfferSummary));
+    .map(offer => ({
+      ...offer,
+      price: parseOlxPrice(offer.price!!),
+      createdAt: parseOlxCreationDate(offer.createdAt!!),
+      platform: getMarketplacePlatformFromUrl(offer.url!!),
+      url: parseOlxOfferUrl(offer.url!!)
+    } as OfferSummary));
 }
 
 export const getSingleOfferFromOlx = async (url: string): Promise<Offer | null> => {

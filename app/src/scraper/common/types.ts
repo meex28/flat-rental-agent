@@ -2,7 +2,11 @@ export type MarketplacePlatform = "OLX" | "OTODOM";
 
 export interface OfferSummary {
   url: string;
+  title: string;
+  location: string;
+  price: number;
   createdAt: Date;
+  platform: MarketplacePlatform;
 }
 
 export interface Offer {

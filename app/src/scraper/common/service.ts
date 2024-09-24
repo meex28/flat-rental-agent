@@ -1,46 +1,19 @@
-import {getSingleOfferFromOlx, searchOffersOnOlx} from "../olx/service";
-import {Offer, OfferSummary} from "./types";
-import {getSingleOfferFromOtodom} from "../otodom/service";
+import {searchOffersOnOlx} from "../olx/service";
+import {MarketplacePlatform, OfferSummary} from "./types";
 import {logger} from "../../utils/logger";
 import {OfferRequirementsDto} from "../../dto/offer-requirements";
 
 export const searchOffers = async (
   timestampFrom: number,
   requirements: OfferRequirementsDto,
-): Promise<Offer[]> => {
+): Promise<OfferSummary[]> => {
   logger.info(`Start searching offers for requirements: ${JSON.stringify(requirements)}`);
-
   const offers = await searchOffersOnOlx(timestampFrom, requirements);
-
-  const { olxUrls, otodomUrls } = categorizeUrlsByPlatform(offers);
-
-  logger.info(`Found ${olxUrls.length} OLX offers and ${otodomUrls.length} OTODOM offers. Total: ${olxUrls.length + otodomUrls.length}`);
-
-  const detailedOffers = await Promise.all([
-    ...olxUrls.map(getSingleOfferFromOlx),
-    ...otodomUrls.map(getSingleOfferFromOtodom)
-  ])
-  return detailedOffers.filter(offer => offer != null);
+  const olxOffersNumber = offers.filter(o => o.platform === "OLX").length;
+  const otodomOffersNumber = offers.filter(o => o.platform === "OTODOM").length;
+  logger.info(`Found ${olxOffersNumber} OLX offers and ${otodomOffersNumber} OTODOM offers. Total: ${olxOffersNumber + otodomOffersNumber}`);
+  return offers;
 }
 
-const categorizeUrlsByPlatform = (offers: OfferSummary[]) => {
-  const olxUrlsSet = new Set<string>();
-  const otodomUrlsSet = new Set<string>();
-
-  offers.forEach(offer => {
-    if (offer.url.includes("otodom")) {
-      if (!otodomUrlsSet.has(offer.url)) {
-        otodomUrlsSet.add(offer.url);
-      }
-    } else {
-      if (!olxUrlsSet.has(offer.url)) {
-        olxUrlsSet.add(offer.url);
-      }
-    }
-  });
-
-  return {
-    olxUrls: Array.from(olxUrlsSet),
-    otodomUrls: Array.from(otodomUrlsSet)
-  };
-};
+export const getMarketplacePlatformFromUrl = (url: string): MarketplacePlatform =>
+  url.includes("otodom") ? "OTODOM" : "OLX";
