@@ -1,8 +1,16 @@
 -set-requirements-command = /set_requirements
+-bot-name = InstantHomeHunt
+
+# bot info
+bot-info-description =
+    🏠 InstantHomeHunt is your lightning-fast property search assistant!
+    Get real-time alerts for the latest offers from OLX and Otodom, set custom requirements, and find your dream property before others do!
+bot-info-short-description =
+    🏠 InstantHomeHunt is your lightning-fast property search assistant!
 
 # start command
 start-message =
-    🏠 Welcome to FlatRentalAgent! I'm here to help you discover your ideal place.
+    🏠 Welcome to the { -bot-name }! I'm here to help you discover your ideal place.
 
     To get started, please tell me about your dream property using the { -set-requirements-command } command. Once you've set your preferences, I'll keep an eye out and notify you whenever I find matching properties.
 
@@ -29,7 +37,7 @@ set-requirements-summary-message = Here's a summary of your requirements:
 show-requirement-not-found = You have no any requirements about offers. You can update these preferences anytime by typing { -set-requirements-command }
 
 offer-alert-message =
-    🏠 New Property Offer Alert!
+    🏠 New Home Hunt Alert!
 
     {$title}
     📍 Location: {$location}

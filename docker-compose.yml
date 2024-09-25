@@ -1,7 +1,7 @@
 services:
   database:
     image: postgres:15
-    container_name: flat_rental_agent_database
+    container_name: instant_home_hunt_database
     restart: always
     environment:
       POSTGRES_USER: user

@@ -4,6 +4,7 @@ import {AvailableConversations, BotContext} from "./types";
 import {conversations, createConversation} from "@grammyjs/conversations";
 import {setRequirementsConversation} from "./conversations/set-requirements";
 import {I18n} from "@grammyjs/i18n";
+import {initializeBotInfo} from "./bot-info";
 
 export let telegramBot: Bot<BotContext>;
 
@@ -29,6 +30,7 @@ export const launchTelegramBot = async () => {
   telegramBot.use(conversations());
   telegramBot.use(createConversation(setRequirementsConversation, AvailableConversations.SET_OFFER_REQUIREMENTS));
 
+  await initializeBotInfo(telegramBot);
   await initializeTelegramCommands(telegramBot);
 
   telegramBot.start();
