@@ -9,6 +9,8 @@ const commandsDescriptions: Record<AvailableCommands, string> = {
   start: "Start receiving notifications",
   set_requirements: "Set requirements of offers that you want to receive notifications",
   show_requirements: "Show active requirements of offers that you want to receive notifications",
+  help: "Show help message about this bot",
+  author: "Show information about the author of this bot"
 }
 
 export const initializeTelegramCommands = async (telegramBot: Bot<BotContext>) => {
@@ -22,6 +24,14 @@ export const initializeTelegramCommands = async (telegramBot: Bot<BotContext>) =
     const hasUserAlreadySubscribed = await onUserTelegramSubscription(chatId);
     const response = ctx.t(hasUserAlreadySubscribed ? "start-message-already-subscribed" : "start-message");
     await ctx.reply(response);
+  });
+
+  telegramBot.command(AvailableCommands.HELP, async (ctx) => {
+    await ctx.reply(ctx.t("help-message"));
+  })
+
+  telegramBot.command(AvailableCommands.AUTHOR, async (ctx) => {
+    await ctx.replyWithMarkdown(ctx.t("author-message"));
   });
 
   telegramBot.command(AvailableCommands.SET_REQUIREMENTS, async (ctx) => {

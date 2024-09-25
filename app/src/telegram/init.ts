@@ -5,6 +5,7 @@ import {conversations, createConversation} from "@grammyjs/conversations";
 import {setRequirementsConversation} from "./conversations/set-requirements";
 import {I18n} from "@grammyjs/i18n";
 import {initializeBotInfo} from "./bot-info";
+import {hydrateReply} from "@grammyjs/parse-mode";
 
 export let telegramBot: Bot<BotContext>;
 
@@ -20,12 +21,12 @@ export const launchTelegramBot = async () => {
   telegramBot = new Bot(telegramBotToken!!);
 
   telegramBot.use(i18n);
-
   telegramBot.use(session({
     initial() {
       return {};
     }
   }));
+  telegramBot.use(hydrateReply);
 
   telegramBot.use(conversations());
   telegramBot.use(createConversation(setRequirementsConversation, AvailableConversations.SET_OFFER_REQUIREMENTS));

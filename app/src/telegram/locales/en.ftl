@@ -1,21 +1,36 @@
 -set-requirements-command = /set_requirements
+-show-requirements-command = /show_requirements
+-help-command = /help
+-author-command = /author
 -bot-name = InstantHomeHunt
 
 # bot info
 bot-info-description =
-    🏠 InstantHomeHunt is your lightning-fast property search assistant!
+    🏠 { -bot-name } is your lightning-fast property search assistant!
     Get real-time alerts for the latest offers from OLX and Otodom, set custom requirements, and find your dream property before others do!
 bot-info-short-description =
-    🏠 InstantHomeHunt is your lightning-fast property search assistant!
+    🏠 { -bot-name } is your lightning-fast property search assistant!
+help-message =
+    🏡 { -bot-name } will send you notification about offers that meet your requirements. Use the following commands to configure its behavior:
 
-# start command
+    { -set-requirements-command } - set the requirements for the offers you're looking for.
+    { -show-requirements-command } - show active requirements (used byt the bot in its search).
+    { -help-command } - display this message.
+    { -author-command } - information about the app's author. Have ideas for the app or found a bug? Use this to find a way to contact me!
+author-message =
+    Hi 👋 I'm Piotr Puchała, the creator of { -bot-name }\.
+    I'm developing this app to make finding matching properties \(like a flat to rent\) easier\.
+
+    You can reach me via [LinkedIn](https://www.linkedin.com/in/piotr-pucha%C5%82a/),
+    and the entire project is available on [GitHub](https://github.com/meex28/instant-home-hunt)
+
+    Let’s make property hunting easier\! 🔍🏡
 start-message =
     🏠 Welcome to the { -bot-name }! I'm here to help you discover your ideal place.
 
     To get started, please tell me about your dream property using the { -set-requirements-command } command. Once you've set your preferences, I'll keep an eye out and notify you whenever I find matching properties.
 
     Happy house hunting! 🔍🏡
-
 start-message-already-subscribed =
     Welcome back! 👋 It's great to see you again.
 
