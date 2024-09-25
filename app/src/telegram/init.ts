@@ -7,15 +7,17 @@ import {I18n} from "@grammyjs/i18n";
 
 export let telegramBot: Bot<BotContext>;
 
+export const i18n = new I18n<BotContext>({
+  defaultLocale: "en",
+  useSession: true,
+  directory: "src/telegram/locales",
+  fluentBundleOptions: {useIsolating: false},
+});
+
 export const launchTelegramBot = async () => {
   const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
   telegramBot = new Bot(telegramBotToken!!);
 
-  const i18n = new I18n<BotContext>({
-    defaultLocale: "en",
-    useSession: true,
-    directory: "src/telegram/locales",
-  });
   telegramBot.use(i18n);
 
   telegramBot.use(session({

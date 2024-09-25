@@ -26,8 +26,15 @@ set-requirements-max-size-question = Finally, let's set the maximum size in squa
 set-requirements-save-finish = I've saved these preferences and will start sending you notifications when matching offers are found. You can update these preferences anytime by typing { -set-requirements-command }
 set-requirements-finish = Thank you for providing all the details.
 set-requirements-summary-message = Here's a summary of your requirements:
-
 show-requirement-not-found = You have no any requirements about offers. You can update these preferences anytime by typing { -set-requirements-command }
+
+offer-alert-message =
+    🏠 New Property Offer Alert!
+
+    {$title}
+    📍 Location: {$location}
+    💰 Price: {$price} PLN
+    🌐 [View Offer]({$url})
 
 # validation
 optional-numeric-input-error = Please enter a valid number or type "skip" to omit.`

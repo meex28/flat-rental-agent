@@ -22,15 +22,16 @@ export const searchOffersOnOlx = async (
   const offersPages: OfferSummary[][] = [];
   for (let i = 0; i < numberOfPages; i++) {
     const currentPageOffers = await fetchOffersSummariesFromSinglePage(url, i + 1);
+    const offersInSelectedTimeWindow = currentPageOffers.filter(offer => offer?.createdAt.getTime() > timestampFrom);
     // if there are no offers in given time window on current page we stop loading
     // because we order them by creation date
-    if (currentPageOffers.length === 0) {
+    if (offersInSelectedTimeWindow.length === 0) {
       break;
     }
-    offersPages.push(currentPageOffers);
+    offersPages.push(offersInSelectedTimeWindow);
   }
 
-  return offersPages.flat().filter(offer => offer?.createdAt.getTime() > timestampFrom);
+  return offersPages.flat();
 }
 
 const buildSearchUrl = (requirements: OfferRequirementsDto) => {
@@ -96,8 +97,8 @@ const fetchOffersSummariesFromSinglePage = async (url: string, pageNumber: numbe
     const offers = document.querySelectorAll('[data-testid="l-card"]')
     return Array.from(offers).map((offer) => {
       const cardTitle = offer.querySelector('[data-cy="ad-card-title"]');
-      const title = cardTitle?.querySelector('h6')?.textContent;
-      const url = cardTitle?.querySelector('a')?.getAttribute('href');
+      const title = cardTitle?.querySelector('h6')?.textContent?.trim();
+      const url = cardTitle?.querySelector('a')?.getAttribute('href')?.trim();
       const locationAndDate = offer.querySelector('[data-testid="location-date"]');
       const [location, date] = locationAndDate?.textContent?.split(' - ') ?? [undefined, undefined];
       const price = offer.querySelector('[data-testid="ad-price"]')?.textContent;
