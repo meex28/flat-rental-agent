@@ -52,7 +52,7 @@ set-requirements-summary-message = Here's a summary of your requirements:
 show-requirement-not-found = You have no any requirements about offers. You can update these preferences anytime by typing { -set-requirements-command }
 
 offer-alert-message =
-    🏠 New Home Hunt Alert!
+    🏠 New Home Hunt Alert\!
 
     {$title}
     📍 Location: {$location}
