@@ -19,7 +19,7 @@ export const searchOffersOnOlx = async (
 
   const numberOfPages = await fetchNumberOfPagesOnSearchUrl(url);
 
-  const offersPages: OfferSummary[][] = [];
+  const searchedOffers: OfferSummary[] = [];
   for (let i = 0; i < numberOfPages; i++) {
     const currentPageOffers = await fetchOffersSummariesFromSinglePage(url, i + 1);
     const offersInSelectedTimeWindow = currentPageOffers.filter(offer => offer?.createdAt.getTime() > timestampFrom);
@@ -28,10 +28,20 @@ export const searchOffersOnOlx = async (
     if (offersInSelectedTimeWindow.length === 0) {
       break;
     }
-    offersPages.push(offersInSelectedTimeWindow);
+    searchedOffers.push(...offersInSelectedTimeWindow);
   }
 
-  return offersPages.flat();
+  // some offers might be present on multiple pages
+  return removeDuplicateOffers(searchedOffers);
+}
+
+const removeDuplicateOffers = (offers: OfferSummary[]): OfferSummary[] => {
+  return offers.reduce((acc, offer) => {
+    if (!acc.find(o => o.url === offer.url)) {
+      acc.push(offer);
+    }
+    return acc;
+  }, [] as OfferSummary[]);
 }
 
 const buildSearchUrl = (requirements: OfferRequirementsDto) => {
