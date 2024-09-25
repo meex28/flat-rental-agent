@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/flat-rental-agent.iml" filepath="$PROJECT_DIR$/.idea/flat-rental-agent.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/instant-home-hunt.iml" filepath="$PROJECT_DIR$/.idea/instant-home-hunt.iml" />
     </modules>
   </component>
 </project>
